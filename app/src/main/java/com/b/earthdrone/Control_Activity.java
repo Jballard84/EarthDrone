@@ -1,24 +1,23 @@
 package com.b.earthdrone;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class Live_Activity extends AppCompatActivity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class Control_Activity extends AppCompatActivity {
     private Button mLive_button;
     private Button mDash_button;
     private Button mControl_button;
     private Button mMap_button;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.live_view);
-
-
-
+        setContentView(R.layout.control_view);
         mMap_button = (Button) findViewById(R.id.button1);
         mMap_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -28,28 +27,24 @@ public class Live_Activity extends AppCompatActivity {
             }
         });
 
-        mControl_button = (Button) findViewById(R.id.button2);
-        mControl_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view2) {
-                finish();
-                openControl_Activity();
-            }
-        });
-
-
-        mDash_button = (Button) findViewById(R.id.button3);
+        mDash_button = (Button) findViewById(R.id.button2);
         mDash_button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view3) {
+            public void onClick(View view2) {
                 finish();
                 openDash_Activity();
             }
         });
+
+        mLive_button = (Button) findViewById(R.id.button3);
+        mLive_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view3) {
+                finish();
+                openLive_Activity();
+            }
+        });
     }
-
-
-
 
     public void openControl_Activity() {
         Intent intent = new Intent(this, Control_Activity.class);
@@ -68,6 +63,8 @@ public class Live_Activity extends AppCompatActivity {
         Intent intent = new Intent(this,Live_Activity.class );
         startActivity(intent);
     }
+
+
 
 
 }

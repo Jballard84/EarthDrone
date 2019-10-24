@@ -22,7 +22,14 @@
         app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" >
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Controller view" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout3"
@@ -35,36 +42,36 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/Control_button"
+        android:id="@+id/button2"
         android:layout_width="0dp"
         android:layout_height="51dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="20dp"
-        android:text="Control"
-        app:layout_constraintBottom_toTopOf="@+id/Dash_button"
+        android:text="Dash Board"
+        app:layout_constraintBottom_toTopOf="@+id/button3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/linearLayout3"
-        app:layout_constraintTop_toBottomOf="@+id/Live_button"
+        app:layout_constraintTop_toBottomOf="@+id/button1"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <Button
-        android:id="@+id/Dash_button"
+        android:id="@+id/button3"
         android:layout_width="0dp"
         android:layout_height="51dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="70dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="130dp"
-        android:text="Dash"
+        android:text="Live View"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/linearLayout3"
-        app:layout_constraintTop_toBottomOf="@+id/Live_button" />
+        app:layout_constraintTop_toBottomOf="@+id/button1" />
 
     <Button
-        android:id="@+id/Live_button"
+        android:id="@+id/button1"
         android:layout_width="0dp"
         android:layout_height="51dp"
         android:layout_marginStart="24dp"
