@@ -19,9 +19,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Live_Activity"></activity>
-        <activity android:name=".Dash_Activity"></activity>
-        <activity android:name=".Control_Activity"></activity>
+        <activity
+            android:name=".Live_Activity"
+            android:screenOrientation="landscape">
+        </activity>
+        <activity
+            android:name=".Dash_Activity"
+            android:screenOrientation="landscape"></activity>
+        <activity
+            android:name=".Control_Activity"
+            android:screenOrientation="landscape"></activity>
     </application>
 
 </manifest>

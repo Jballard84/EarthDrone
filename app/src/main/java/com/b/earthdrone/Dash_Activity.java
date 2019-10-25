@@ -12,6 +12,7 @@ public class Dash_Activity extends AppCompatActivity {
     private Button mDash_button;
     private Button mControl_button;
     private Button mMap_button;
+    private Button mconnection_button;
 
 
     @Override
@@ -42,6 +43,15 @@ public class Dash_Activity extends AppCompatActivity {
             public void onClick(View view3) {
                 finish();
                 openLive_Activity();
+            }
+        });
+
+        mconnection_button = (Button)findViewById(R.id.connection_button);
+        mconnection_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
+                mconnection_button.setText(getResources().getText(R.string.connected));
             }
         });
     }

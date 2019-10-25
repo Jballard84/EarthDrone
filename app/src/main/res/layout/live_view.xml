@@ -11,7 +11,7 @@
 
 
 <LinearLayout
-        android:id="@+id/linearLayout2"
+        android:id="@+id/connection"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="25dp"
@@ -53,6 +53,7 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="20dp"
         android:text="Control"
+        android:background="@drawable/buttonshape"
         app:layout_constraintBottom_toTopOf="@+id/button3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/linearLayout3"
@@ -68,6 +69,7 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="130dp"
         android:text="Dash Board"
+        android:background="@drawable/buttonshape"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/linearLayout3"
@@ -81,6 +83,7 @@
         android:layout_marginTop="70dp"
         android:layout_marginEnd="24dp"
         android:text="Map View"
+        android:background="@drawable/buttonshape"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/linearLayout3"
         app:layout_constraintTop_toTopOf="@+id/linearLayout3" />

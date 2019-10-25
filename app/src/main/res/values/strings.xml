@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">EarthDrone</string>
+    <string name="notconnected">Not Connected</string>
+    <string name="connected">Connected</string>
 </resources>
