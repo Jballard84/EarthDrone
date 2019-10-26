@@ -13,6 +13,7 @@ public class Dash_Activity extends AppCompatActivity {
     private Button mControl_button;
     private Button mMap_button;
     private Button mconnection_button;
+    private static boolean clicked;
 
 
     @Override
@@ -52,8 +53,14 @@ public class Dash_Activity extends AppCompatActivity {
             public void onClick(View view) {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
+                clicked = true;
             }
         });
+
+        if(clicked == true){
+            mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
+            mconnection_button.setText(getResources().getText(R.string.connected));
+        }
     }
     public void openControl_Activity() {
         Intent intent = new Intent(this, Control_Activity.class);
