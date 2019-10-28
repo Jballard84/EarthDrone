@@ -2,7 +2,6 @@ package com.b.earthdrone;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -14,7 +13,7 @@ public class Dash_Activity extends AppCompatActivity {
     private Button mControl_button;
     private Button mMap_button;
     private Button mconnection_button;
-    private boolean isConnected;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,7 @@ public class Dash_Activity extends AppCompatActivity {
         mControl_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view2) {
-                ///finish();
+                finish();
                 openControl_Activity();
             }
         });
@@ -42,7 +41,7 @@ public class Dash_Activity extends AppCompatActivity {
         mLive_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view3) {
-                //finish();
+                finish();
                 openLive_Activity();
             }
         });
@@ -55,13 +54,6 @@ public class Dash_Activity extends AppCompatActivity {
                 mconnection_button.setText(getResources().getText(R.string.connected));
             }
         });
-    }
-
-    @Override
-    public  void onSaveInstanceState(Bundle savedInstanceState){
-        super.onSaveInstanceState(savedInstanceState);
-        Log.i(TAG,"onSaveInstanceState");
-        savedInstanceState.putInt(KEY_INDEX,mCurrentIndex);
     }
     public void openControl_Activity() {
         Intent intent = new Intent(this, Control_Activity.class);
@@ -81,17 +73,6 @@ public class Dash_Activity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void updatebattery(){// this is used to fetch the new data from the server
 
-    }
-    private void updateposition(){// this is used to update lat and long
-
-    }
-    private void updatedistance(){// this is used to calculate the distance between the user and the robot
-
-    }
-    private void updateorentation(){// used to determine the oreination of the crawler
-
-    }
 
 }
