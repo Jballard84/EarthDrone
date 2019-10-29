@@ -1,23 +1,24 @@
 package com.b.earthdrone;
 
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class Map_Activity extends AppCompatActivity {
+import androidx.appcompat.app.AppCompatActivity;
 
-private Button mLive_button;
-private Button mDash_button;
-private Button mControl_button;
-private Button mMap_button;
+public class Map_Activity extends AppCompatActivity{
 
-    @Override
+    private Button mLive_button;
+    private Button mDash_button;
+    private Button mControl_button;
+    private Button mMap_button;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
+
         mLive_button = (Button) findViewById(R.id.button1);
         mLive_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,6 +45,7 @@ private Button mMap_button;
                openDash_Activity();
             }
         });
+
     }
 
     public void openLive_Activity() {
@@ -59,6 +61,4 @@ private Button mMap_button;
         Intent intent = new Intent(this, Dash_Activity.class);
         startActivity(intent);
     }
-
-
 }

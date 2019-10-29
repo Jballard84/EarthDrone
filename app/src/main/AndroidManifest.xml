@@ -9,7 +9,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".Map_Activity"
             android:screenOrientation="landscape">
@@ -19,15 +18,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
         <activity
             android:name=".Live_Activity"
-            android:screenOrientation="landscape"></activity>
+            android:screenOrientation="landscape" />
         <activity
             android:name=".Dash_Activity"
             android:screenOrientation="landscape" />
         <activity
             android:name=".Control_Activity"
             android:screenOrientation="landscape" />
+
     </application>
 
 </manifest>
