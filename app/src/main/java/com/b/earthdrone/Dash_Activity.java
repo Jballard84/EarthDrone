@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,12 +15,20 @@ public class Dash_Activity extends AppCompatActivity {
     private Button mMap_button;
     private Button mconnection_button;
     private static boolean clicked;
-
+    private TextView mlatitude_text;
+    private TextView mlongitude_text;
+    private TextView mdistance_text;
+    private TextView morientation_text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dash_view);
+        mlatitude_text=(TextView)findViewById(R.id.lat);
+        mlongitude_text=(TextView)findViewById(R.id.lon);
+        mdistance_text=(TextView)findViewById(R.id.distance_text);
+        morientation_text=(TextView)findViewById(R.id.orien);
+
         mMap_button= (Button) findViewById(R.id.button1);
         mMap_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,6 +62,10 @@ public class Dash_Activity extends AppCompatActivity {
             public void onClick(View view) {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
+                mlatitude_text.setText("35.616314 ");
+                mlongitude_text.setText("-82.56732 ");
+                mdistance_text.setText("0 ");
+                morientation_text.setText("NW ");
                 clicked = true;
             }
         });
@@ -60,6 +73,12 @@ public class Dash_Activity extends AppCompatActivity {
         if(clicked == true){
             mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
             mconnection_button.setText(getResources().getText(R.string.connected));
+            mlatitude_text.setText("35.616314 ");
+            mlongitude_text.setText("-82.56732 ");
+            mdistance_text.setText("0 ");
+            morientation_text.setText("NW ");
+
+
         }
     }
     public void openControl_Activity() {
