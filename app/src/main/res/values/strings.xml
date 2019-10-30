@@ -3,5 +3,15 @@
     <string name="notconnected">Not Connected</string>
     <string name="connected">Connected</string>
     <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
+    <string name="control">Control</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="connection">Connection</string>
+    <string name="liveview">Live View</string>
+    <string name="longitude">Longitude</string>
+    <string name="orientation">Orientation</string>
+    <string name="battery">Battery</string>
+    <string name="units">ft</string>
+    <string name="distance">Distance</string>
+    <string name="latitude">Latitude</string>
+    <string name="mapview">Map View</string>
 </resources>
