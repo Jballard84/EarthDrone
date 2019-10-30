@@ -22,7 +22,7 @@ public abstract class Map_Fragment extends SupportMapFragment implements OnMapRe
 
     public View onCreate(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.map_view,container,false);
-        mMapView = (MapView) v.findViewById(R.id.mapView);
+        mMapView = (MapView) v.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this);
         return v;
