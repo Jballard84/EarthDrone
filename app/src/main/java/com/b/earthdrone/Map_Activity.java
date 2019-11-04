@@ -106,6 +106,4 @@ private Button mMap_button;
         }.start();
     }
 
-    //random comment
-
 }
