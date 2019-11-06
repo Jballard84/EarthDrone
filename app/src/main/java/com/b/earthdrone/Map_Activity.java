@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -16,7 +17,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -27,6 +31,7 @@ private Button mLive_button;
 private Button mDash_button;
 private Button mControl_button;
 private Button mMap_button;
+private LatLngBounds fenceCenter;
     private GoogleMap mMap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,14 +101,29 @@ private Button mMap_button;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //make this a variable
+        mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(35.616265, -82.566015))
+                .title("Robot"));
+        PolylineOptions robotFence = new PolylineOptions()
+                .add(
+                        new LatLng(35.616759, -82.566081),
+                        new LatLng(35.615992, -82.566879),
+                        new LatLng(35.615243, -82.565706),
+                        new LatLng(35.615999, -82.564857),
+                        new LatLng(35.616759, -82.566081));
+        Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
         // public Location getMyLocation
         // Add a marker in Sydney and move the camera
-        //LatLng UNCA_Quad = new LatLng(35.616314, -82.56732);
+        LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         //mMap.addMarker(new MarkerOptions().position(UNCA_Quad).title("Marker in Asheville quad"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(UNCA_Quad));
+
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad,19));
         mMap.setMyLocationEnabled(true);
-        mMap.setOnMyLocationButtonClickListener(this);
-        mMap.setOnMyLocationClickListener(this);
+        //mMap.setOnMyLocationButtonClickListener(this);
+        //mMap.setOnMyLocationClickListener(this);
 
         //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.616314,-82.56732), 10));
         new CountDownTimer(3000, 1000) {
