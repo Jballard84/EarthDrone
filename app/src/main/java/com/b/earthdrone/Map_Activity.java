@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,9 +20,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 
 public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -32,16 +41,39 @@ private Button mDash_button;
 private Button mControl_button;
 private Button mMap_button;
 private LatLngBounds fenceCenter;
-    private GoogleMap mMap;
+private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
+private static final String user = "BallardPi";
+private static final String pass = "BallardPi";
+private TextView mlatitude_text;
+private TextView mlongitude_text;
+private static double robotlat = 35.615992;
+private static double robotlong = -82.566879;
+private static LatLng newlatLng = new LatLng(robotlat, robotlong);
+private GoogleMap mMap;
+private Marker robotPosition;
+private boolean marker=false;
+private PolylineOptions robotFence;
+private String latitude="";
+private String longitude="";
+private double phoneLatitude;
+private double phoneLongitude;
+private Connection conn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
 
+        mlatitude_text=(TextView)findViewById(R.id.lat);
+        mlongitude_text=(TextView)findViewById(R.id.lon);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        if (mMap!=null) {
+            //Marker robotPositionold = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+            moveMarker();
+        }
         mLive_button = (Button) findViewById(R.id.button1);
         mLive_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,14 +130,54 @@ private LatLngBounds fenceCenter;
     }
 
 
+    /**
+     * this updates the position of the marker on the map
+     */
+    public void moveMarker(double lat, double lon) {
+        MyTask myTask = new MyTask();
+        myTask.execute();
+        robotlat = Double.parseDouble(latitude);
+        robotlong = Double.parseDouble(longitude);
+        if (mMap != null) {
+            newlatLng = new LatLng(robotlat, robotlong);
+            if (marker!=false){
+                robotPosition.setPosition(newlatLng);
+            }//end of if the marker is already there
+             robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+        }//end of if map is created
+
+    }
+
+
+    public void moveMarker() {
+        MyTask myTask = new MyTask();
+        myTask.execute();
+        robotlat = Double.parseDouble(latitude);
+        robotlong = Double.parseDouble(longitude);
+        if (mMap != null) {
+            newlatLng = new LatLng(robotlat, robotlong);
+            if (marker!=false){
+                robotPosition.setPosition(newlatLng);
+            }//end of if the marker is already there
+            robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+        }//end of if map is created
+
+    }
+
+    /**
+     * this creates the map and geofence and places a marker in a default location until it connects to the datatbase
+     * @param googleMap
+     */
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        //make this a variable
-        mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(35.616265, -82.566015))
-                .title("Robot"));
-        PolylineOptions robotFence = new PolylineOptions()
+        final LatLng latLng = new LatLng(35.615965, -82.566009);
+        //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
+        //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+        robotPosition = mMap.addMarker(new MarkerOptions().position(latLng).title("Robot"));
+        robotFence = new PolylineOptions()
                 .add(
                         new LatLng(35.616759, -82.566081),
                         new LatLng(35.615992, -82.566879),
@@ -113,41 +185,63 @@ private LatLngBounds fenceCenter;
                         new LatLng(35.615999, -82.564857),
                         new LatLng(35.616759, -82.566081));
         Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
-        // public Location getMyLocation
-        // Add a marker in Sydney and move the camera
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
-        //mMap.addMarker(new MarkerOptions().position(UNCA_Quad).title("Marker in Asheville quad"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(UNCA_Quad));
-
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad,19));
+        robotPosition.setPosition(UNCA_Quad);
+        marker=true;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad,18));
         mMap.setMyLocationEnabled(true);
-        //mMap.setOnMyLocationButtonClickListener(this);
-        //mMap.setOnMyLocationClickListener(this);
-
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.616314,-82.56732), 10));
-        new CountDownTimer(3000, 1000) {
-            public void onFinish() {
-                //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.616314,-82.56732), 10));
-
-                // Execute your code here
-            }
-
-
-            public void onTick(long millisUntilFinished) {
-                // millisUntilFinished    The amount of time until finished.
-            }
-        }.start();
-        new CountDownTimer(4000, 1000) {
-            public void onFinish() {
-               // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(35.616314,-82.56732), 80));
-                // Execute your code here
-            }
-            public void onTick(long millisUntilFinished) {
-                // millisUntilFinished    The amount of time until finished.
-            }
-        }.start();
-
+        newlatLng = new LatLng(35.615992, -82.566879);
     }
+
+    /**
+     * myTask gets the
+     */
+    private class MyTask extends AsyncTask<String,Void,String> {
+        String res = "";
+        @Override
+        protected String doInBackground(String... strings) {
+            try {
+                Class.forName("org.mariadb.jdbc.Driver");
+                try {
+                    if(conn == null){
+                        conn = DriverManager.getConnection(url,user,pass);
+                        System.out.println("Database connection success");
+                    }
+                    else {
+                        System.out.println("Database is connected");
+                    }
+                    Statement st2 = conn.createStatement();
+                    ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    lat.next();
+                    ResultSetMetaData rsmd2 = lat.getMetaData();
+                    latitude = lat.getString(1).toString() + ",";
+
+                    Statement st3 = conn.createStatement();
+                    ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    lon.next();
+                    ResultSetMetaData rsmd3 = lon.getMetaData();
+                    longitude = lon.getString(1).toString() + ",";
+
+                    res = latitude+longitude;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    res = e.toString();
+                }
+                StringBuilder sb= new StringBuilder();
+                return res;
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+            }
+            System.out.println("Data base selection success");
+            return null;
+        }
+
+        protected void onPostExecute(String result) {
+            mlatitude_text.setText(latitude);
+            mlongitude_text.setText(longitude);
+
+        }
+
+    }//mytask
 
 }

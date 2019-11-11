@@ -3,6 +3,7 @@ package com.b.earthdrone;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,11 +26,14 @@ public class Dash_Activity extends AppCompatActivity {
     private TextView mlatitude_text;
     private TextView mlongitude_text;
     private TextView mdistance_text;
-    private TextView morientation_text;
+    private static TextView morientation_text;
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
-
+    private String orientation = "";
+    private String latitude="";
+    private String longitude="";
+    private String distance="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +79,9 @@ public class Dash_Activity extends AppCompatActivity {
                 public void onClick(View view) {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
+                final MyTask myTask = new MyTask();
+                myTask.execute();
+
 
                     clicked = true;
                 }
@@ -110,45 +117,45 @@ public class Dash_Activity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private class MyTask extends AsyncTask<String,Void,String> {
+   private class MyTask extends AsyncTask<String,Void,String> {
         String res = "";
-        String ori="";
-
         @Override
         protected String doInBackground(String... strings) {
             try {
                 Class.forName("org.mariadb.jdbc.Driver");
                 try {
-                    Connection conn = DriverManager.getConnection(url,user,pass);
-                    System.out.println("Database connection success");
+                    if(conn == null){
+                        conn = DriverManager.getConnection(url,user,pass);
+                        System.out.println("Database connection success");
+                    }
+                    else {
+                        System.out.println("Database is connected");
+                    }
 
-                    String orientation = "Database Connection Successful\n";
-                    String latitude="";
-                    String longitude="";
-                    String distance="";
                     Statement st1 = conn.createStatement();
-                    ResultSet or = st1.executeQuery("select distinct Heading from Test;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    or.next();
                     ResultSetMetaData rsmd1 = or.getMetaData();
-                    orientation = or.getString(1).toString() + ",";
+                    orientation = or.getString(1).toString() ;
 
                     Statement st2 = conn.createStatement();
-                    ResultSet lat = st2.executeQuery("select distinct Heading from Test;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    lat.next();
                     ResultSetMetaData rsmd2 = lat.getMetaData();
-                    latitude = or.getString(1).toString() + ",";
+                    latitude = lat.getString(1).toString() ;
 
                     Statement st3 = conn.createStatement();
-                    ResultSet lon = st3.executeQuery("select distinct Heading from Test;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    lon.next();
                     ResultSetMetaData rsmd3 = lon.getMetaData();
-                    longitude = or.getString(1).toString() + ",";
+                    longitude = lon.getString(1).toString();
 
                     Statement st4 = conn.createStatement();
-                    ResultSet dis = st4.executeQuery("select distinct Heading from Test;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    dis.next();
                     ResultSetMetaData rsmd4 = or.getMetaData();
-                    distance = dis.getString(1).toString() + ",";
+                    distance = dis.getString(1).toString();
 
-                    //while (or.next()) {
-                      //  orientation += or.getString(1).toString() + "\n";
-                    //}
                     res = orientation+latitude+longitude+distance;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -170,53 +177,15 @@ public class Dash_Activity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result) {
-            int size_of_string = result.length();
-            String temp ="";
-            String orientation = "";
-            String latitude="";
-            String longitude="";
-            String distance="";
-            for (int i=0; i<size_of_string;i++){
-
-                if(temp == null){// check to see if it is null first
-                    temp=String.valueOf(result.charAt(i));
-                }
-                else{// now search threw the string till you find a ,
-                    if (result.charAt(i)==','){
-
-                        if (orientation==null) {
-                            orientation = temp;
-                            temp = "";
-                        } //found orientaion now need to find latitude
-                        else if(latitude==null){
-                            latitude = temp;
-                            temp="";
-                        } //found latitude now need to find longitude
-                        else if(longitude==null){
-                            longitude=temp;
-                            temp="";
-                        }// found longitude now need to find distance
-                        else{
-                            distance= temp;
-                        }// end of the string and there should not be anything left
-                    }// end of if the character at the index is a coma
-                    else{
-                        temp = temp+String.valueOf(result.charAt(i));
-                    }// the character is not a coma so addd to the string
-                }
-
-                // now search threw the string till you find a ,
-
-            }
-
             morientation_text.setText(orientation);
             mlatitude_text.setText(latitude);
             mlongitude_text.setText(longitude);
             mdistance_text.setText(distance);
-
-
         }
 
     }//mytask
+
+
+
 
 }
