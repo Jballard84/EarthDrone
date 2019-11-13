@@ -37,9 +37,6 @@
         <activity
             android:name=".Control_Activity"
             android:screenOrientation="landscape" />
-        <service
-            android:name=".DbUpdateJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

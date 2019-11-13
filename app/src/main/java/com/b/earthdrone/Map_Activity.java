@@ -16,12 +16,10 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,12 +30,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+
+import static com.b.earthdrone.GlobalClass.distance;
 
 public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -52,8 +51,10 @@ private LatLngBounds fenceCenter;
 private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
 private static final String user = "BallardPi";
 private static final String pass = "BallardPi";
-private static TextView mlatitude_text;
-private static TextView mlongitude_text;
+private static TextView mlatitude_text = GlobalClass.mlatitude_text;
+private static TextView mlongitude_text = GlobalClass.mlongitude_text;
+private static TextView mdistance_text = GlobalClass.mdistance_text;
+private static TextView morientation_text = GlobalClass.morientation_text;
 private static double robotlat = 35.615992;
 private static double robotlong = -82.566879;
 private static LatLng newlatLng = new LatLng(robotlat, robotlong);
@@ -61,11 +62,14 @@ private GoogleMap mMap;
 private Marker robotPosition;
 private boolean marker=false;
 private PolylineOptions robotFence;
-private static String latitude="";
-private static String longitude="";
+private static String latitude= GlobalClass.latitude;
+private static String longitude=GlobalClass.longitude;
+private static String orientation = GlobalClass.orientation;
+private static String distance=GlobalClass.distance;
+private static Connection conn = GlobalClass.conn;
 private double phoneLatitude;
 private double phoneLongitude;
-public static Connection conn;
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +90,7 @@ public static Connection conn;
                 DbUpdateJobService.class);
 
         JobInfo jobInfo = new JobInfo.Builder(1, componentName)
-                .setPeriodic(50000).build();
+                .setPeriodic(1000).build();
         jobScheduler.schedule(jobInfo);
 
         if (mMap!=null) {
@@ -170,8 +174,6 @@ public static Connection conn;
      */
 
     public void moveMarker() {
-        MyTask myTask = new MyTask();
-        myTask.execute();
         robotlat = Double.parseDouble(latitude);
         robotlong = Double.parseDouble(longitude);
         if (mMap != null) {
@@ -214,7 +216,7 @@ public static Connection conn;
     /**
      * myTask gets all of the variables for the dashboard
      */
-    public static class MyTask extends AsyncTask<String,Void,String> {
+    private class MyTask extends AsyncTask<String,Void,String> {
         String res = "";
         @Override
         protected String doInBackground(String... strings) {
@@ -223,45 +225,91 @@ public static Connection conn;
                 try {
                     if(conn == null){
                         conn = DriverManager.getConnection(url,user,pass);
+                        GlobalClass.conn= conn;
                         System.out.println("Database connection success");
                     }
                     else {
                         System.out.println("Database is connected");
                     }
+
+                    Statement st1 = conn.createStatement();
+                    ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    or.next();
+                    ResultSetMetaData rsmd1 = or.getMetaData();
+                    orientation = or.getString(1).toString() ;
+                    GlobalClass.orientation=orientation;
+
                     Statement st2 = conn.createStatement();
                     ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     lat.next();
                     ResultSetMetaData rsmd2 = lat.getMetaData();
-                    latitude = lat.getString(1).toString() + ",";
+                    latitude = lat.getString(1).toString() ;
+                    GlobalClass.latitude=latitude;
 
                     Statement st3 = conn.createStatement();
                     ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     lon.next();
                     ResultSetMetaData rsmd3 = lon.getMetaData();
-                    longitude = lon.getString(1).toString() + ",";
+                    longitude = lon.getString(1).toString();
+                    GlobalClass.longitude=longitude;
 
-                    res = latitude+longitude;
+                    Statement st4 = conn.createStatement();
+                    ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                    dis.next();
+                    ResultSetMetaData rsmd4 = or.getMetaData();
+                    distance = dis.getString(1).toString();
+                    GlobalClass.distance=distance;
+
+                    res = orientation+latitude+longitude+distance;
                 } catch (Exception e) {
                     e.printStackTrace();
                     res = e.toString();
                 }
+
                 StringBuilder sb= new StringBuilder();
+
+
                 return res;
+
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
             System.out.println("Data base selection success");
+
+
             return null;
         }
 
         protected void onPostExecute(String result) {
+            morientation_text.setText(orientation);
+            GlobalClass.morientation_text=morientation_text;
             mlatitude_text.setText(latitude);
+            GlobalClass.mlatitude_text= mlatitude_text;
             mlongitude_text.setText(longitude);
-
+            GlobalClass.mlongitude_text=mlongitude_text;
+            mdistance_text.setText(distance);
+            GlobalClass.mdistance_text= mdistance_text;
         }
 
     }//mytask
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public class DbUpdateJobService extends JobService {
 
+        @Override
+        public boolean onStartJob(JobParameters jobParameters) {
+
+            MyTask myTask = new MyTask();
+            myTask.execute();
+            moveMarker();
+            return false;
+        }
+        @Override
+        public boolean onStopJob(JobParameters jobParameters) {
+            return false;
+        }
+
+
+    }
 
 }

@@ -23,18 +23,18 @@ public class Dash_Activity extends AppCompatActivity {
     private Button mMap_button;
     private Button mconnection_button;
     private static boolean clicked;
-    private TextView mlatitude_text;
-    private TextView mlongitude_text;
-    private TextView mdistance_text;
-    private static TextView morientation_text;
+    private static TextView mlatitude_text = GlobalClass.mlatitude_text;
+    private static TextView mlongitude_text = GlobalClass.mlongitude_text;
+    private static TextView mdistance_text = GlobalClass.mdistance_text;
+    private static TextView morientation_text = GlobalClass.morientation_text;
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
-    private String orientation = "";
-    private String latitude="";
-    private String longitude="";
-    private String distance="";
-
+    private static String orientation = GlobalClass.orientation;
+    private static String latitude=GlobalClass.latitude;
+    private static String longitude=GlobalClass.longitude;
+    private static String distance=GlobalClass.distance;
+    private static Connection conn = GlobalClass.conn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,19 +80,18 @@ public class Dash_Activity extends AppCompatActivity {
                 public void onClick(View view) {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
-                final MyTask myTask = new MyTask();
-                myTask.execute();
-
-
-                    clicked = true;
+                clicked = true;
                 }
             });
 
         if (clicked == true) {
             mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
             mconnection_button.setText(getResources().getText(R.string.connected));
-            MyTask myTask = new MyTask();
-            myTask.execute();
+            morientation_text.setText(orientation);
+            mlatitude_text.setText(latitude);
+            mlongitude_text.setText(longitude);
+            mdistance_text.setText(distance);
+
 
 
 
@@ -118,73 +117,6 @@ public class Dash_Activity extends AppCompatActivity {
         startActivity(intent);
     }
 
-   private class MyTask extends AsyncTask<String,Void,String> {
-        String res = "";
-        @Override
-        protected String doInBackground(String... strings) {
-            try {
-                Class.forName("org.mariadb.jdbc.Driver");
-                try {
-                    if(conn == null){
-                        conn = DriverManager.getConnection(url,user,pass);
-                        System.out.println("Database connection success");
-                    }
-                    else {
-                        System.out.println("Database is connected");
-                    }
-
-                    Statement st1 = conn.createStatement();
-                    ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    or.next();
-                    ResultSetMetaData rsmd1 = or.getMetaData();
-                    orientation = or.getString(1).toString() ;
-
-                    Statement st2 = conn.createStatement();
-                    ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    lat.next();
-                    ResultSetMetaData rsmd2 = lat.getMetaData();
-                    latitude = lat.getString(1).toString() ;
-
-                    Statement st3 = conn.createStatement();
-                    ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    lon.next();
-                    ResultSetMetaData rsmd3 = lon.getMetaData();
-                    longitude = lon.getString(1).toString();
-
-                    Statement st4 = conn.createStatement();
-                    ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    dis.next();
-                    ResultSetMetaData rsmd4 = or.getMetaData();
-                    distance = dis.getString(1).toString();
-
-                    res = orientation+latitude+longitude+distance;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    res = e.toString();
-                }
-
-                StringBuilder sb= new StringBuilder();
-
-
-                return res;
-
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
-            System.out.println("Data base selection success");
-
-
-            return null;
-        }
-
-        protected void onPostExecute(String result) {
-            morientation_text.setText(orientation);
-            mlatitude_text.setText(latitude);
-            mlongitude_text.setText(longitude);
-            mdistance_text.setText(distance);
-        }
-
-    }//mytask
 
 
 
