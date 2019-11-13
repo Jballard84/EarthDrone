@@ -15,4 +15,16 @@ public class GlobalClass {
     public static TextView mlongitude_text;
     public static TextView mdistance_text;
     public static TextView morientation_text;
+
+
+    public static boolean HasChanged(String ori,String lat,String lon,String dis){
+        if(ori != orientation){
+           return true;
+        }
+        else if (lat != latitude){
+            return true;
+        }
+        return false;
+
+    }
 }

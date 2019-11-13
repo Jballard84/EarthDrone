@@ -91,6 +91,7 @@ public class Dash_Activity extends AppCompatActivity {
             mlatitude_text.setText(latitude);
             mlongitude_text.setText(longitude);
             mdistance_text.setText(distance);
+            GlobalClass.HasChanged();
 
 
 
