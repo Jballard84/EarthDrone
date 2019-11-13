@@ -35,6 +35,7 @@ public class Dash_Activity extends AppCompatActivity {
     private String longitude="";
     private String distance="";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

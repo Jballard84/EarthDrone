@@ -1,12 +1,20 @@
 package com.b.earthdrone;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.job.JobInfo;
+import android.app.job.JobParameters;
+import android.app.job.JobScheduler;
+import android.app.job.JobService;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -44,8 +52,8 @@ private LatLngBounds fenceCenter;
 private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
 private static final String user = "BallardPi";
 private static final String pass = "BallardPi";
-private TextView mlatitude_text;
-private TextView mlongitude_text;
+private static TextView mlatitude_text;
+private static TextView mlongitude_text;
 private static double robotlat = 35.615992;
 private static double robotlong = -82.566879;
 private static LatLng newlatLng = new LatLng(robotlat, robotlong);
@@ -53,11 +61,12 @@ private GoogleMap mMap;
 private Marker robotPosition;
 private boolean marker=false;
 private PolylineOptions robotFence;
-private String latitude="";
-private String longitude="";
+private static String latitude="";
+private static String longitude="";
 private double phoneLatitude;
 private double phoneLongitude;
-private Connection conn;
+public static Connection conn;
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +78,16 @@ private Connection conn;
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        JobScheduler jobScheduler = (JobScheduler)getApplicationContext()
+                .getSystemService(JOB_SCHEDULER_SERVICE);
+
+        ComponentName componentName = new ComponentName(this,
+                DbUpdateJobService.class);
+
+        JobInfo jobInfo = new JobInfo.Builder(1, componentName)
+                .setPeriodic(50000).build();
+        jobScheduler.schedule(jobInfo);
 
         if (mMap!=null) {
             //Marker robotPositionold = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
@@ -134,8 +153,6 @@ private Connection conn;
      * this updates the position of the marker on the map
      */
     public void moveMarker(double lat, double lon) {
-        MyTask myTask = new MyTask();
-        myTask.execute();
         robotlat = Double.parseDouble(latitude);
         robotlong = Double.parseDouble(longitude);
         if (mMap != null) {
@@ -148,6 +165,9 @@ private Connection conn;
 
     }
 
+    /**
+     * this updates the position of the marker by calling myTask
+     */
 
     public void moveMarker() {
         MyTask myTask = new MyTask();
@@ -168,8 +188,6 @@ private Connection conn;
      * this creates the map and geofence and places a marker in a default location until it connects to the datatbase
      * @param googleMap
      */
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -194,9 +212,9 @@ private Connection conn;
     }
 
     /**
-     * myTask gets the
+     * myTask gets all of the variables for the dashboard
      */
-    private class MyTask extends AsyncTask<String,Void,String> {
+    public static class MyTask extends AsyncTask<String,Void,String> {
         String res = "";
         @Override
         protected String doInBackground(String... strings) {
@@ -243,5 +261,7 @@ private Connection conn;
         }
 
     }//mytask
+
+
 
 }
