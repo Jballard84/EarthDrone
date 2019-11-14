@@ -56,9 +56,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static double robotlat = 35.615992;
     private static double robotlong = -82.566879;
     private static LatLng newlatLng = new LatLng(robotlat, robotlong);
-    private GoogleMap mMap;
-    private Marker robotPosition;
-    private boolean marker = false;
+    private static GoogleMap mMap;
+    private static Marker robotPosition;
+    private static boolean marker = false;
     private PolylineOptions robotFence;
     private static String latitude;
     private static String longitude;
@@ -174,7 +174,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
      * this updates the position of the marker by calling myTask
      */
 
-    public void moveMarker() {
+    private static  void moveMarker() {
         robotlat = Double.parseDouble(latitude);
         robotlong = Double.parseDouble(longitude);
         if (mMap != null) {
@@ -215,14 +215,49 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         newlatLng = new LatLng(35.615992, -82.566879);
     }
 
-    /**
-     * myTask gets all of the variables for the dashboard
-     */
-    public static class MyTask extends AsyncTask<String, Void, String> {
-        String res = "";
+
+    public static class PollService extends IntentService {
+
+
+        public static Intent newIntent(Context context) {
+            return new Intent(context, PollService.class);
+        }
+
+        public static void setServiceAlarm(Context context, boolean isOn) {
+            Intent i = PollService.newIntent(context);
+            PendingIntent pi = PendingIntent.getService(
+                    context, 0, i, 0);
+
+            AlarmManager alarmManager = (AlarmManager)
+                    context.getSystemService(Context.ALARM_SERVICE);
+
+            if (isOn) {
+                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME,
+                        SystemClock.elapsedRealtime(), POLL_INTERVAL_MS, pi);
+            } else {
+                alarmManager.cancel(pi);
+                pi.cancel();
+            }
+        }
+
+        public boolean isServiceAlarmOn(Context context) {
+            Intent i = PollService.newIntent(context);
+            PendingIntent pi = PendingIntent
+                    .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
+            return pi != null;
+        }
+
+        public PollService() {
+            super(TAG);
+        }
 
         @Override
-        protected String doInBackground(String... strings) {
+        protected void onHandleIntent(Intent intent) {
+            //this is where I think I should put my code but dont know for sure
+            Log.i(TAG, "Recieved an intent" + intent);
+            String res = "";
+
+
             try {
                 Class.forName("org.mariadb.jdbc.Driver");
                 try {
@@ -263,104 +298,120 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                     distance = dis.getString(1).toString();
                     GlobalClass.mModel.setDistance(distance);
 
-                    res = orientation + latitude + longitude + distance;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    res = e.toString();
+
                 }
 
                 StringBuilder sb = new StringBuilder();
 
-
-                return res;
 
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
             System.out.println("Data base selection success");
 
-
-            return null;
-        }
-
-        protected void onPostExecute(String result) {
-            morientation_text.setText(orientation);
-            // GlobalClass.morientation_text=morientation_text;
-            mlatitude_text.setText(latitude);
-            //GlobalClass.mlatitude_text= mlatitude_text;
-            mlongitude_text.setText(longitude);
-            //GlobalClass.mlongitude_text=mlongitude_text;
-            mdistance_text.setText(distance);
-            //GlobalClass.mdistance_text= mdistance_text;
-        }
-
-    }//mytask
-
-    /*
-
-
-        public class DbPollService extends IntentService {
-
-            public DbPollService(String name) {
-                super(name);
-            }
-
-            @Override
-            protected void onHandleIntent(@Nullable Intent intent) {
-                MyTask myTask = new MyTask();
-                myTask.execute();
-                moveMarker();
-
-            }
-        }
-
-     */
-    public class PollService extends IntentService {
-
-
-        public  Intent newIntent(Context context) {
-            return new Intent(context, com.b.earthdrone.PollService.class);
-        }
-
-        public  void setServiceAlarm(Context context, boolean isOn) {
-            Intent i = com.b.earthdrone.PollService.newIntent(context);
-            PendingIntent pi = PendingIntent.getService(
-                    context, 0, i, 0);
-
-            AlarmManager alarmManager = (AlarmManager)
-                    context.getSystemService(Context.ALARM_SERVICE);
-
-            if (isOn) {
-                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME,
-                        SystemClock.elapsedRealtime(), POLL_INTERVAL_MS, pi);
-            } else {
-                alarmManager.cancel(pi);
-                pi.cancel();
-            }
-        }
-
-        public  boolean isServiceAlarmOn(Context context) {
-            Intent i = com.b.earthdrone.PollService.newIntent(context);
-            PendingIntent pi = PendingIntent
-                    .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
-            return pi != null;
-        }
-
-        public PollService() {
-            super(TAG);
-        }
-
-        @Override
-        protected void onHandleIntent(Intent intent) {
-            Log.i(TAG, "Recieved an intent" + intent);
-            Map_Activity.MyTask myTask = new Map_Activity.MyTask();
-            myTask.execute();
-
-
-            //this is where I will do my code but dont know how
+            moveMarker();
 
 
         }
 
+
+/*
+    private boolean isNetworkAvailableAndConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
+        boolean isNetworkConnected = isNetworkAvailable &&
+                cm.getActiveNetworkInfo().isConnected();
+
+        return isNetworkConnected;
+
+*/
     }
 }
+/*
+
+
+     // myTask gets all of the variables for the dashboard
+
+public static class MyTask extends AsyncTask<String, Void, String> {
+    String res = "";
+
+    @Override
+    protected String doInBackground(String... strings) {
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+            try {
+                if (conn == null) {
+                    conn = DriverManager.getConnection(url, user, pass);
+                    GlobalClass.mModel.setConn(conn);
+                    System.out.println("Database connection success");
+                } else {
+                    System.out.println("Database is connected");
+
+                }
+
+                Statement st1 = conn.createStatement();
+                ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                or.next();
+                ResultSetMetaData rsmd1 = or.getMetaData();
+                orientation = or.getString(1).toString();
+                GlobalClass.mModel.setOrientation(orientation);
+
+                Statement st2 = conn.createStatement();
+                ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                lat.next();
+                ResultSetMetaData rsmd2 = lat.getMetaData();
+                latitude = lat.getString(1).toString();
+                GlobalClass.mModel.setLatitude(latitude);
+
+                Statement st3 = conn.createStatement();
+                ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                lon.next();
+                ResultSetMetaData rsmd3 = lon.getMetaData();
+                longitude = lon.getString(1).toString();
+                GlobalClass.mModel.setLongitude(longitude);
+
+                Statement st4 = conn.createStatement();
+                ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                dis.next();
+                ResultSetMetaData rsmd4 = or.getMetaData();
+                distance = dis.getString(1).toString();
+                GlobalClass.mModel.setDistance(distance);
+
+                res = orientation + latitude + longitude + distance;
+            } catch (Exception e) {
+                e.printStackTrace();
+                res = e.toString();
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+
+            return res;
+
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("Data base selection success");
+
+
+        return null;
+    }
+
+    protected void onPostExecute(String result) {
+        morientation_text.setText(orientation);
+        // GlobalClass.morientation_text=morientation_text;
+        mlatitude_text.setText(latitude);
+        //GlobalClass.mlatitude_text= mlatitude_text;
+        mlongitude_text.setText(longitude);
+        //GlobalClass.mlongitude_text=mlongitude_text;
+        mdistance_text.setText(distance);
+        //GlobalClass.mdistance_text= mdistance_text;
+    }
+
+}//mytask
+
+ */

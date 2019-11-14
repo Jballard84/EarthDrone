@@ -38,7 +38,7 @@
             android:name=".Control_Activity"
             android:screenOrientation="landscape" />
         <service
-            android:name=".PollService"
+            android:name=".Map_Activity$PollService"
             />
 
     </application>
