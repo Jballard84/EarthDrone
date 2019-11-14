@@ -1,30 +1,36 @@
 package com.b.earthdrone;
 
-import android.widget.TextView;
-
-import java.sql.Connection;
-
 public class GlobalClass {
 
-    public static Connection conn;
-    public static String orientation = "";
-    public static String latitude="";
-    public static String longitude="";
-    public static String distance="";
-    public static TextView mlatitude_text;
-    public static TextView mlongitude_text;
-    public static TextView mdistance_text;
-    public static TextView morientation_text;
+    public static MasterModel mModel = new MasterModel();
 
 
-    public static boolean HasChanged(String ori,String lat,String lon,String dis){
-        if(ori != orientation){
-           return true;
+        private boolean boo = false;
+        private ChangeListener listener;
+
+        public boolean isBoo() {
+            return boo;
         }
-        else if (lat != latitude){
-            return true;
-        }
-        return false;
 
+        public void setBoo(boolean boo) {
+            this.boo = boo;
+            if (listener != null) listener.onChange();
+        }
+
+        public ChangeListener getListener() {
+            return listener;
+        }
+
+        public void setListener(ChangeListener listener) {
+            this.listener = listener;
+        }
+
+        public interface ChangeListener {
+            void onChange();
+        }
     }
-}
+
+
+
+
+

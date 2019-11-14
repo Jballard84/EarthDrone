@@ -15,35 +15,50 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.util.Observable;
 
-public class Dash_Activity extends AppCompatActivity {
+public class Dash_Activity extends AppCompatActivity  {
     private Button mLive_button;
     private Button mDash_button;
     private Button mControl_button;
     private Button mMap_button;
     private Button mconnection_button;
     private static boolean clicked;
-    private static TextView mlatitude_text = GlobalClass.mlatitude_text;
-    private static TextView mlongitude_text = GlobalClass.mlongitude_text;
-    private static TextView mdistance_text = GlobalClass.mdistance_text;
-    private static TextView morientation_text = GlobalClass.morientation_text;
+    private  TextView mlatitude_text;
+    private  TextView mlongitude_text;
+    private  TextView mdistance_text;
+    private  TextView morientation_text;
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
-    private static String orientation = GlobalClass.orientation;
-    private static String latitude=GlobalClass.latitude;
-    private static String longitude=GlobalClass.longitude;
-    private static String distance=GlobalClass.distance;
-    private static Connection conn = GlobalClass.conn;
+
+    /**
+     * Need to find out if I need a poll service in this activity if I have one running in map activity
+     * @param savedInstanceState
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dash_view);
+        Intent intent = new Intent(this, PollService.class);
+        startService(intent);
         mlatitude_text=(TextView)findViewById(R.id.lat);
         mlongitude_text=(TextView)findViewById(R.id.lon);
         mdistance_text=(TextView)findViewById(R.id.distance_text);
         morientation_text=(TextView)findViewById(R.id.orien);
+
+        morientation_text.setText(GlobalClass.mModel.getOrientation());
+        GlobalClass globalClass = new GlobalClass();
+        globalClass.setListener(new GlobalClass.ChangeListener() {
+            @Override
+            public void onChange() {
+                morientation_text.setText(GlobalClass.mModel.getOrientation());
+                mlatitude_text.setText(GlobalClass.mModel.getLatitude());
+                mlongitude_text.setText(GlobalClass.mModel.getLongitude());
+                mdistance_text.setText(GlobalClass.mModel.getDistance());
+            }
+        });
 
 
 
@@ -87,11 +102,11 @@ public class Dash_Activity extends AppCompatActivity {
         if (clicked == true) {
             mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
             mconnection_button.setText(getResources().getText(R.string.connected));
-            morientation_text.setText(orientation);
-            mlatitude_text.setText(latitude);
-            mlongitude_text.setText(longitude);
-            mdistance_text.setText(distance);
-            GlobalClass.HasChanged();
+            morientation_text.setText(GlobalClass.mModel.getOrientation());
+            mlatitude_text.setText(GlobalClass.mModel.getLatitude());
+            mlongitude_text.setText(GlobalClass.mModel.getLongitude());
+            mdistance_text.setText(GlobalClass.mModel.getDistance());
+
 
 
 
@@ -120,6 +135,8 @@ public class Dash_Activity extends AppCompatActivity {
 
 
 
+public  class dashview extends Observable{
 
+}
 
 }

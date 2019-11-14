@@ -1,20 +1,11 @@
 package com.b.earthdrone;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.job.JobInfo;
-import android.app.job.JobParameters;
-import android.app.job.JobScheduler;
-import android.app.job.JobService;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -36,7 +27,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 
-import static com.b.earthdrone.GlobalClass.distance;
+
 
 public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
@@ -51,10 +42,10 @@ private LatLngBounds fenceCenter;
 private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
 private static final String user = "BallardPi";
 private static final String pass = "BallardPi";
-private static TextView mlatitude_text = GlobalClass.mlatitude_text;
-private static TextView mlongitude_text = GlobalClass.mlongitude_text;
-private static TextView mdistance_text = GlobalClass.mdistance_text;
-private static TextView morientation_text = GlobalClass.morientation_text;
+private static TextView mlatitude_text;
+private static TextView mlongitude_text;
+private static TextView mdistance_text;
+private static TextView morientation_text;
 private static double robotlat = 35.615992;
 private static double robotlong = -82.566879;
 private static LatLng newlatLng = new LatLng(robotlat, robotlong);
@@ -62,36 +53,37 @@ private GoogleMap mMap;
 private Marker robotPosition;
 private boolean marker=false;
 private PolylineOptions robotFence;
-private static String latitude= GlobalClass.latitude;
-private static String longitude=GlobalClass.longitude;
-private static String orientation = GlobalClass.orientation;
-private static String distance=GlobalClass.distance;
-private static Connection conn = GlobalClass.conn;
-private double phoneLatitude;
-private double phoneLongitude;
+private static String latitude;
+private static String longitude;
+private static String orientation;
+private static String distance;
+private static Connection conn=GlobalClass.mModel.getConn();
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
+    /**
+     * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
+     * now I can not reference them when I run my task
+     * @param savedInstanceState
+     */
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
 
-        mlatitude_text=(TextView)findViewById(R.id.lat);
-        mlongitude_text=(TextView)findViewById(R.id.lon);
+        //mlatitude_text=(TextView)findViewById(R.id.lat);
+        //mlongitude_text=(TextView)findViewById(R.id.lon);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        JobScheduler jobScheduler = (JobScheduler)getApplicationContext()
-                .getSystemService(JOB_SCHEDULER_SERVICE);
+        Intent intent = new Intent(this, PollService.class);
+        startService(intent);
 
-        ComponentName componentName = new ComponentName(this,
-                DbUpdateJobService.class);
 
-        JobInfo jobInfo = new JobInfo.Builder(1, componentName)
-                .setPeriodic(1000).build();
-        jobScheduler.schedule(jobInfo);
+
 
         if (mMap!=null) {
             //Marker robotPositionold = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
@@ -216,7 +208,7 @@ private double phoneLongitude;
     /**
      * myTask gets all of the variables for the dashboard
      */
-    private class MyTask extends AsyncTask<String,Void,String> {
+    public static class MyTask extends AsyncTask<String,Void,String> {
         String res = "";
         @Override
         protected String doInBackground(String... strings) {
@@ -225,11 +217,12 @@ private double phoneLongitude;
                 try {
                     if(conn == null){
                         conn = DriverManager.getConnection(url,user,pass);
-                        GlobalClass.conn= conn;
+                        GlobalClass.mModel.setConn(conn);
                         System.out.println("Database connection success");
                     }
                     else {
                         System.out.println("Database is connected");
+
                     }
 
                     Statement st1 = conn.createStatement();
@@ -237,28 +230,28 @@ private double phoneLongitude;
                     or.next();
                     ResultSetMetaData rsmd1 = or.getMetaData();
                     orientation = or.getString(1).toString() ;
-                    GlobalClass.orientation=orientation;
+                    GlobalClass.mModel.setOrientation(orientation);
 
                     Statement st2 = conn.createStatement();
                     ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     lat.next();
                     ResultSetMetaData rsmd2 = lat.getMetaData();
                     latitude = lat.getString(1).toString() ;
-                    GlobalClass.latitude=latitude;
+                    GlobalClass.mModel.setLatitude(latitude);
 
                     Statement st3 = conn.createStatement();
                     ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     lon.next();
                     ResultSetMetaData rsmd3 = lon.getMetaData();
                     longitude = lon.getString(1).toString();
-                    GlobalClass.longitude=longitude;
+                    GlobalClass.mModel.setLongitude(longitude);
 
                     Statement st4 = conn.createStatement();
                     ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     dis.next();
                     ResultSetMetaData rsmd4 = or.getMetaData();
                     distance = dis.getString(1).toString();
-                    GlobalClass.distance=distance;
+                    GlobalClass.mModel.setDistance(distance);
 
                     res = orientation+latitude+longitude+distance;
                 } catch (Exception e) {
@@ -282,34 +275,33 @@ private double phoneLongitude;
 
         protected void onPostExecute(String result) {
             morientation_text.setText(orientation);
-            GlobalClass.morientation_text=morientation_text;
+           // GlobalClass.morientation_text=morientation_text;
             mlatitude_text.setText(latitude);
-            GlobalClass.mlatitude_text= mlatitude_text;
+            //GlobalClass.mlatitude_text= mlatitude_text;
             mlongitude_text.setText(longitude);
-            GlobalClass.mlongitude_text=mlongitude_text;
+            //GlobalClass.mlongitude_text=mlongitude_text;
             mdistance_text.setText(distance);
-            GlobalClass.mdistance_text= mdistance_text;
+            //GlobalClass.mdistance_text= mdistance_text;
         }
 
     }//mytask
+/*
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public class DbUpdateJobService extends JobService {
+    public class DbPollService extends IntentService {
+
+        public DbPollService(String name) {
+            super(name);
+        }
 
         @Override
-        public boolean onStartJob(JobParameters jobParameters) {
-
+        protected void onHandleIntent(@Nullable Intent intent) {
             MyTask myTask = new MyTask();
             myTask.execute();
             moveMarker();
-            return false;
-        }
-        @Override
-        public boolean onStopJob(JobParameters jobParameters) {
-            return false;
-        }
 
-
+        }
     }
+
+ */
 
 }
