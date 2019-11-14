@@ -4,13 +4,14 @@ import android.widget.TextView;
 
 import java.sql.Connection;
 import java.util.Observable;
+import java.util.Observer;
 
 public class MasterModel extends Observable {
 
     private   Connection conn;
     private String orientation = "";
-    private String latitude="";
-    private String longitude="";
+    private double latitude=0;
+    private double longitude=0;
     private String distance="";
     private TextView mlatitude_text;
     private TextView mlongitude_text;
@@ -18,35 +19,38 @@ public class MasterModel extends Observable {
     private TextView morientation_text;
 
 
-
+    @Override
+    public synchronized void addObserver(Observer o) {
+        super.addObserver(o);
+    }
 
     void setOrientation(String s){
         this.orientation = s;
-        notifyObservers();
+        notifyObservers(s);
     }
-    void setLatitude(String s){
-        this.latitude=s;
-        notifyObservers();
+    void setLatitude(double d){
+        this.latitude=d;
+        notifyObservers(d);
     }
-    void setLongitude(String s){
-        this.longitude=s;
-        notifyObservers();
+    void setLongitude(double d){
+        this.longitude=d;
+        notifyObservers(d);
     }
     void setDistance(String s){
         this.distance=s;
-        notifyObservers();
+        notifyObservers(s);
     }
     void setConn(Connection c){
         this.conn=c;
-        notifyObservers();
+        notifyObservers(c);
     }
     String getOrientation(){
         return orientation;
     }
-    String getLatitude(){
+    double getLatitude(){
         return latitude;
     }
-    String getLongitude(){
+    double getLongitude(){
         return longitude;
     }
 

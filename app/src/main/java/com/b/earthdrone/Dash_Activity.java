@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.Observable;
+import java.util.Observer;
 
 public class Dash_Activity extends AppCompatActivity  {
     private Button mLive_button;
@@ -31,7 +33,7 @@ public class Dash_Activity extends AppCompatActivity  {
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
-
+    private Handler mHandler;
     /**
      * Need to find out if I need a poll service in this activity if I have one running in map activity
      * @param savedInstanceState
@@ -41,24 +43,43 @@ public class Dash_Activity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dash_view);
-        Intent intent = new Intent(this, PollService.class);
-        startService(intent);
+
         mlatitude_text=(TextView)findViewById(R.id.lat);
         mlongitude_text=(TextView)findViewById(R.id.lon);
         mdistance_text=(TextView)findViewById(R.id.distance_text);
         morientation_text=(TextView)findViewById(R.id.orien);
 
-        morientation_text.setText(GlobalClass.mModel.getOrientation());
-        GlobalClass globalClass = new GlobalClass();
+        GlobalClass.mModel.addObserver(new Observer() {
+            @Override
+            public  void update(Observable observable, Object o) {
+                morientation_text.setText(GlobalClass.mModel.getOrientation());
+                mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
+                mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
+                mdistance_text.setText(GlobalClass.mModel.getDistance());
+            }
+
+
+
+        });
+
+
+
+
+
+       /* GlobalClass globalClass = new GlobalClass();
         globalClass.setListener(new GlobalClass.ChangeListener() {
             @Override
             public void onChange() {
                 morientation_text.setText(GlobalClass.mModel.getOrientation());
-                mlatitude_text.setText(GlobalClass.mModel.getLatitude());
-                mlongitude_text.setText(GlobalClass.mModel.getLongitude());
+                mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
+                mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
                 mdistance_text.setText(GlobalClass.mModel.getDistance());
             }
         });
+
+        */
+
+
 
 
 
@@ -66,6 +87,7 @@ public class Dash_Activity extends AppCompatActivity  {
         mMap_button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view1) {
+
                     finish();
 
                 }
@@ -96,6 +118,14 @@ public class Dash_Activity extends AppCompatActivity  {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
                 clicked = true;
+                morientation_text.setText(GlobalClass.mModel.getOrientation());
+                mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
+                mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
+                mdistance_text.setText(GlobalClass.mModel.getDistance());
+                morientation_text.postDelayed(mUpdate, 0);
+                mlatitude_text.postDelayed(mUpdate, 0);
+                mlongitude_text.postDelayed(mUpdate, 0);
+                mdistance_text.postDelayed(mUpdate, 0);
                 }
             });
 
@@ -103,9 +133,13 @@ public class Dash_Activity extends AppCompatActivity  {
             mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
             mconnection_button.setText(getResources().getText(R.string.connected));
             morientation_text.setText(GlobalClass.mModel.getOrientation());
-            mlatitude_text.setText(GlobalClass.mModel.getLatitude());
-            mlongitude_text.setText(GlobalClass.mModel.getLongitude());
+            mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
+            mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
             mdistance_text.setText(GlobalClass.mModel.getDistance());
+            morientation_text.postDelayed(mUpdate, 0);
+            mlatitude_text.postDelayed(mUpdate, 0);
+            mlongitude_text.postDelayed(mUpdate, 0);
+            mdistance_text.postDelayed(mUpdate, 0);
 
 
 
@@ -132,11 +166,16 @@ public class Dash_Activity extends AppCompatActivity  {
         Intent intent = new Intent(this,Live_Activity.class );
         startActivity(intent);
     }
+    private Runnable mUpdate = new Runnable() {
+        public void run() {
+            morientation_text.setText(GlobalClass.mModel.getOrientation());
+            mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
+            mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
+            mdistance_text.setText(GlobalClass.mModel.getDistance());
+            mdistance_text.postDelayed(this, 1000);
 
+        }
+    };
 
-
-public  class dashview extends Observable{
-
-}
 
 }

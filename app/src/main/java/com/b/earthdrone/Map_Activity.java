@@ -32,6 +32,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +47,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private Button mControl_button;
     private Button mMap_button;
     private LatLngBounds fenceCenter;
-    private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
+    private static final String url = "jdbc:mariadb://10.123.21.91:3306/EarthDrone";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
     private static TextView mlatitude_text;
@@ -87,16 +88,17 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mapFragment.getMapAsync(this);// want to put a flag so I know when the map is ready
 
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
-
-
-        if (mMap != null) {
-            //Marker robotPositionold = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+        //moveMarker();
+        PollService.setServiceAlarm(this,true);{
             moveMarker();
+            startService(intent);
         }
+
+
         mLive_button = (Button) findViewById(R.id.button1);
         mLive_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,6 +141,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, Dash_Activity.class);
         startActivity(intent);
     }
+    private Runnable mUpdate = new Runnable() {
+        public void run() {
+
+            moveMarker();
+
+        }
+    };
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -157,9 +166,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     /**
      * this updates the position of the marker on the map
      */
-    public void moveMarker(double lat, double lon) {
-        robotlat = Double.parseDouble(latitude);
-        robotlong = Double.parseDouble(longitude);
+    private static void moveMarker(double lat, double lon) {
+        robotlat = lat;
+        robotlong = lon;
         if (mMap != null) {
             newlatLng = new LatLng(robotlat, robotlong);
             if (marker != false) {
@@ -174,16 +183,30 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
      * this updates the position of the marker by calling myTask
      */
 
-    private static  void moveMarker() {
-        robotlat = Double.parseDouble(latitude);
-        robotlong = Double.parseDouble(longitude);
+    private static void moveMarker() {
+        if (latitude != null) {
+            robotlat = GlobalClass.mModel.getLatitude();
+            robotlong = GlobalClass.mModel.getLongitude();
+
+        }
         if (mMap != null) {
+
             newlatLng = new LatLng(robotlat, robotlong);
-            if (marker != false) {
-                robotPosition.setPosition(newlatLng);
-            }//end of if the marker is already there
-            robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
-        }//end of if map is created
+
+            System.out.printf("%f %f", robotlat, robotlong);
+            robotPosition.setPosition(newlatLng);
+            //end of if the marker is already there
+            //robotPosition.remove();
+            //robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+
+            System.out.println("Database is not connected but map is created");
+
+            }//end of if map is created
+
+        else{
+            System.out.println("Database is not connected and map is not created");
+        }
+
 
     }
 
@@ -258,60 +281,70 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
             String res = "";
 
 
-            try {
-                Class.forName("org.mariadb.jdbc.Driver");
-                try {
-                    if (conn == null) {
-                        conn = DriverManager.getConnection(url, user, pass);
-                        GlobalClass.mModel.setConn(conn);
-                        System.out.println("Database connection success");
-                    } else {
-                        System.out.println("Database is connected");
+               try {
+                   Class.forName("org.mariadb.jdbc.Driver");
+                   try {
+                       try {
+                           if (conn == null) {
+                               conn = DriverManager.getConnection(url, user, pass);
 
-                    }
+                               GlobalClass.mModel.setConn(conn);
+                               System.out.println("Database connection success");
+                           } else {
+                               System.out.println("Database is connected");
 
-                    Statement st1 = conn.createStatement();
-                    ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    or.next();
-                    ResultSetMetaData rsmd1 = or.getMetaData();
-                    orientation = or.getString(1).toString();
-                    GlobalClass.mModel.setOrientation(orientation);
+                           }
 
-                    Statement st2 = conn.createStatement();
-                    ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    lat.next();
-                    ResultSetMetaData rsmd2 = lat.getMetaData();
-                    latitude = lat.getString(1).toString();
-                    GlobalClass.mModel.setLatitude(latitude);
+                           Statement st1 = conn.createStatement();
+                           ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           or.next();
+                           ResultSetMetaData rsmd1 = or.getMetaData();
+                           orientation = or.getString(1).toString();
+                           GlobalClass.mModel.setOrientation(orientation);
 
-                    Statement st3 = conn.createStatement();
-                    ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    lon.next();
-                    ResultSetMetaData rsmd3 = lon.getMetaData();
-                    longitude = lon.getString(1).toString();
-                    GlobalClass.mModel.setLongitude(longitude);
+                           Statement st2 = conn.createStatement();
+                           ResultSet lat = st2.executeQuery("select distinct Lat from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lat.next();
+                           ResultSetMetaData rsmd2 = lat.getMetaData();
+                           latitude = lat.getString(1);
 
-                    Statement st4 = conn.createStatement();
-                    ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                    dis.next();
-                    ResultSetMetaData rsmd4 = or.getMetaData();
-                    distance = dis.getString(1).toString();
-                    GlobalClass.mModel.setDistance(distance);
+                           GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                           Statement st3 = conn.createStatement();
+                           ResultSet lon = st3.executeQuery("select distinct Lon from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lon.next();
+                           ResultSetMetaData rsmd3 = lon.getMetaData();
+                           longitude = lon.getString(1).toString();
+                           GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
 
-                }
+                           Statement st4 = conn.createStatement();
+                           ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           dis.next();
+                           ResultSetMetaData rsmd4 = or.getMetaData();
+                           distance = dis.getString(1).toString();
+                           GlobalClass.mModel.setDistance(distance);
+                       }catch (SQLNonTransientConnectionException e) {
+                           e.printStackTrace();
+                           System.out.println("Data base connection was not a success");
+                       }
 
-                StringBuilder sb = new StringBuilder();
+                   } catch (Exception e) {
+                       e.printStackTrace();
+
+                   }
+
+                   StringBuilder sb = new StringBuilder();
 
 
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
-            System.out.println("Data base selection success");
+               } catch (ClassNotFoundException ex) {
+                   ex.printStackTrace();
+               }
 
-            moveMarker();
+
+
+           // System.out.println("Data base selection success");
+
+           // moveMarker();
 
 
         }

@@ -96,14 +96,14 @@ public class PollService extends IntentService {
                 lat.next();
                 ResultSetMetaData rsmd2 = lat.getMetaData();
                 latitude = lat.getString(1).toString();
-                GlobalClass.mModel.setLatitude(latitude);
+                GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
 
                 Statement st3 = conn.createStatement();
                 ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                 lon.next();
                 ResultSetMetaData rsmd3 = lon.getMetaData();
                 longitude = lon.getString(1).toString();
-                GlobalClass.mModel.setLongitude(longitude);
+                GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
 
                 Statement st4 = conn.createStatement();
                 ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
