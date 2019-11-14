@@ -2,11 +2,18 @@ package com.b.earthdrone;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlarmManager;
+import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,7 +33,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
-
+import java.util.concurrent.TimeUnit;
 
 
 public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
@@ -34,35 +41,38 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         OnMapReadyCallback {
 
 
-private Button mLive_button;
-private Button mDash_button;
-private Button mControl_button;
-private Button mMap_button;
-private LatLngBounds fenceCenter;
-private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
-private static final String user = "BallardPi";
-private static final String pass = "BallardPi";
-private static TextView mlatitude_text;
-private static TextView mlongitude_text;
-private static TextView mdistance_text;
-private static TextView morientation_text;
-private static double robotlat = 35.615992;
-private static double robotlong = -82.566879;
-private static LatLng newlatLng = new LatLng(robotlat, robotlong);
-private GoogleMap mMap;
-private Marker robotPosition;
-private boolean marker=false;
-private PolylineOptions robotFence;
-private static String latitude;
-private static String longitude;
-private static String orientation;
-private static String distance;
-private static Connection conn=GlobalClass.mModel.getConn();
+    private Button mLive_button;
+    private Button mDash_button;
+    private Button mControl_button;
+    private Button mMap_button;
+    private LatLngBounds fenceCenter;
+    private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
+    private static final String user = "BallardPi";
+    private static final String pass = "BallardPi";
+    private static TextView mlatitude_text;
+    private static TextView mlongitude_text;
+    private static TextView mdistance_text;
+    private static TextView morientation_text;
+    private static double robotlat = 35.615992;
+    private static double robotlong = -82.566879;
+    private static LatLng newlatLng = new LatLng(robotlat, robotlong);
+    private GoogleMap mMap;
+    private Marker robotPosition;
+    private boolean marker = false;
+    private PolylineOptions robotFence;
+    private static String latitude;
+    private static String longitude;
+    private static String orientation;
+    private static String distance;
+    private static Connection conn = GlobalClass.mModel.getConn();
+    private static final String TAG = "PollService";
 
+    private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
      * now I can not reference them when I run my task
+     *
      * @param savedInstanceState
      */
 
@@ -83,9 +93,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
         startService(intent);
 
 
-
-
-        if (mMap!=null) {
+        if (mMap != null) {
             //Marker robotPositionold = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
             moveMarker();
         }
@@ -103,7 +111,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
             @Override
             public void onClick(View view) {
 
-               openControl_Activity();
+                openControl_Activity();
             }
         });
 
@@ -112,13 +120,13 @@ private static Connection conn=GlobalClass.mModel.getConn();
             @Override
             public void onClick(View view) {
 
-               openDash_Activity();
+                openDash_Activity();
             }
         });
     }
 
     public void openLive_Activity() {
-        Intent intent = new Intent(this,Live_Activity.class );
+        Intent intent = new Intent(this, Live_Activity.class);
         startActivity(intent);
     }
 
@@ -126,6 +134,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
         Intent intent = new Intent(this, Control_Activity.class);
         startActivity(intent);
     }
+
     public void openDash_Activity() {
         Intent intent = new Intent(this, Dash_Activity.class);
         startActivity(intent);
@@ -153,10 +162,10 @@ private static Connection conn=GlobalClass.mModel.getConn();
         robotlong = Double.parseDouble(longitude);
         if (mMap != null) {
             newlatLng = new LatLng(robotlat, robotlong);
-            if (marker!=false){
+            if (marker != false) {
                 robotPosition.setPosition(newlatLng);
             }//end of if the marker is already there
-             robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+            robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
         }//end of if map is created
 
     }
@@ -170,7 +179,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
         robotlong = Double.parseDouble(longitude);
         if (mMap != null) {
             newlatLng = new LatLng(robotlat, robotlong);
-            if (marker!=false){
+            if (marker != false) {
                 robotPosition.setPosition(newlatLng);
             }//end of if the marker is already there
             robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
@@ -180,6 +189,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
 
     /**
      * this creates the map and geofence and places a marker in a default location until it connects to the datatbase
+     *
      * @param googleMap
      */
     @Override
@@ -199,8 +209,8 @@ private static Connection conn=GlobalClass.mModel.getConn();
         Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         robotPosition.setPosition(UNCA_Quad);
-        marker=true;
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad,18));
+        marker = true;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
         mMap.setMyLocationEnabled(true);
         newlatLng = new LatLng(35.615992, -82.566879);
     }
@@ -208,19 +218,19 @@ private static Connection conn=GlobalClass.mModel.getConn();
     /**
      * myTask gets all of the variables for the dashboard
      */
-    public static class MyTask extends AsyncTask<String,Void,String> {
+    public static class MyTask extends AsyncTask<String, Void, String> {
         String res = "";
+
         @Override
         protected String doInBackground(String... strings) {
             try {
                 Class.forName("org.mariadb.jdbc.Driver");
                 try {
-                    if(conn == null){
-                        conn = DriverManager.getConnection(url,user,pass);
+                    if (conn == null) {
+                        conn = DriverManager.getConnection(url, user, pass);
                         GlobalClass.mModel.setConn(conn);
                         System.out.println("Database connection success");
-                    }
-                    else {
+                    } else {
                         System.out.println("Database is connected");
 
                     }
@@ -229,14 +239,14 @@ private static Connection conn=GlobalClass.mModel.getConn();
                     ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     or.next();
                     ResultSetMetaData rsmd1 = or.getMetaData();
-                    orientation = or.getString(1).toString() ;
+                    orientation = or.getString(1).toString();
                     GlobalClass.mModel.setOrientation(orientation);
 
                     Statement st2 = conn.createStatement();
                     ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                     lat.next();
                     ResultSetMetaData rsmd2 = lat.getMetaData();
-                    latitude = lat.getString(1).toString() ;
+                    latitude = lat.getString(1).toString();
                     GlobalClass.mModel.setLatitude(latitude);
 
                     Statement st3 = conn.createStatement();
@@ -253,13 +263,13 @@ private static Connection conn=GlobalClass.mModel.getConn();
                     distance = dis.getString(1).toString();
                     GlobalClass.mModel.setDistance(distance);
 
-                    res = orientation+latitude+longitude+distance;
+                    res = orientation + latitude + longitude + distance;
                 } catch (Exception e) {
                     e.printStackTrace();
                     res = e.toString();
                 }
 
-                StringBuilder sb= new StringBuilder();
+                StringBuilder sb = new StringBuilder();
 
 
                 return res;
@@ -275,7 +285,7 @@ private static Connection conn=GlobalClass.mModel.getConn();
 
         protected void onPostExecute(String result) {
             morientation_text.setText(orientation);
-           // GlobalClass.morientation_text=morientation_text;
+            // GlobalClass.morientation_text=morientation_text;
             mlatitude_text.setText(latitude);
             //GlobalClass.mlatitude_text= mlatitude_text;
             mlongitude_text.setText(longitude);
@@ -285,23 +295,72 @@ private static Connection conn=GlobalClass.mModel.getConn();
         }
 
     }//mytask
-/*
 
-    public class DbPollService extends IntentService {
+    /*
 
-        public DbPollService(String name) {
-            super(name);
+
+        public class DbPollService extends IntentService {
+
+            public DbPollService(String name) {
+                super(name);
+            }
+
+            @Override
+            protected void onHandleIntent(@Nullable Intent intent) {
+                MyTask myTask = new MyTask();
+                myTask.execute();
+                moveMarker();
+
+            }
+        }
+
+     */
+    public class PollService extends IntentService {
+
+
+        public  Intent newIntent(Context context) {
+            return new Intent(context, com.b.earthdrone.PollService.class);
+        }
+
+        public  void setServiceAlarm(Context context, boolean isOn) {
+            Intent i = com.b.earthdrone.PollService.newIntent(context);
+            PendingIntent pi = PendingIntent.getService(
+                    context, 0, i, 0);
+
+            AlarmManager alarmManager = (AlarmManager)
+                    context.getSystemService(Context.ALARM_SERVICE);
+
+            if (isOn) {
+                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME,
+                        SystemClock.elapsedRealtime(), POLL_INTERVAL_MS, pi);
+            } else {
+                alarmManager.cancel(pi);
+                pi.cancel();
+            }
+        }
+
+        public  boolean isServiceAlarmOn(Context context) {
+            Intent i = com.b.earthdrone.PollService.newIntent(context);
+            PendingIntent pi = PendingIntent
+                    .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
+            return pi != null;
+        }
+
+        public PollService() {
+            super(TAG);
         }
 
         @Override
-        protected void onHandleIntent(@Nullable Intent intent) {
-            MyTask myTask = new MyTask();
+        protected void onHandleIntent(Intent intent) {
+            Log.i(TAG, "Recieved an intent" + intent);
+            Map_Activity.MyTask myTask = new Map_Activity.MyTask();
             myTask.execute();
-            moveMarker();
+
+
+            //this is where I will do my code but dont know how
+
 
         }
+
     }
-
- */
-
 }

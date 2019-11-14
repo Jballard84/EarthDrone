@@ -13,9 +13,9 @@ public class MasterModel extends Observable {
     private String longitude="";
     private String distance="";
     private TextView mlatitude_text;
-    public TextView mlongitude_text;
-    public TextView mdistance_text;
-    public TextView morientation_text;
+    private TextView mlongitude_text;
+    private TextView mdistance_text;
+    private TextView morientation_text;
 
 
 
