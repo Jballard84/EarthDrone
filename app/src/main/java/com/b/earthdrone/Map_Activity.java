@@ -22,6 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -69,6 +70,11 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static final String TAG = "PollService";
 
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
+
+    static final LatLng Corner1 = new LatLng(35.616759, -82.566081);
+    static final LatLng Corner2 = new LatLng(35.615992, -82.566879);
+    static final LatLng Corner3 = new LatLng(35.615243, -82.565706);
+    static final LatLng Corner4 = new LatLng(35.615999, -82.564857);
 
     /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
@@ -221,22 +227,51 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         final LatLng latLng = new LatLng(35.615965, -82.566009);
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
-        robotPosition = mMap.addMarker(new MarkerOptions().position(latLng).title("Robot"));
+        robotPosition = mMap.addMarker(new MarkerOptions().position(latLng).title("Robot")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                //.icon(BitmapDescriptorFactory.fromResource(R.mipmap.))
+                );
         robotFence = new PolylineOptions()
                 .add(
-                        new LatLng(35.616759, -82.566081),
-                        new LatLng(35.615992, -82.566879),
-                        new LatLng(35.615243, -82.565706),
-                        new LatLng(35.615999, -82.564857),
-                        new LatLng(35.616759, -82.566081));
+                        Corner1,
+                        Corner2,
+                        Corner3,
+                        Corner4,
+                        Corner1);
         Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        mMap.setMyLocationEnabled(true);
+        //mMap.setMyLocationEnabled(true);   COMMENTED THIS OUT TO WORK ON PHONE
         newlatLng = new LatLng(35.615992, -82.566879);
+
+        Marker cornermarker1 = mMap.addMarker(new MarkerOptions()
+                .position(Corner1)
+                .title("Corner 1")
+                .draggable(true));
+        cornermarker1.setPosition(Corner1);
+        Marker cornermarker2 = mMap.addMarker(new MarkerOptions()
+                .position(Corner2)
+                .title("Corner 2")
+                .draggable(true));
+        cornermarker2.setPosition(Corner2);
+        Marker cornermarker3 = mMap.addMarker(new MarkerOptions()
+                .position(Corner3)
+                .title("Corner 3")
+                .draggable(true));
+        cornermarker3.setPosition(Corner3);
+        Marker cornermarker4 = mMap.addMarker(new MarkerOptions()
+                .position(Corner4)
+                .title("Corner 4")
+                .draggable(true));
+        cornermarker4.setPosition(Corner4);
+
+        LatLng testLatLng = cornermarker4.getPosition();
+        System.out.println(testLatLng);
+
     }
+
 
 
     public static class PollService extends IntentService {
