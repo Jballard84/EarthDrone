@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -68,7 +71,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static String distance;
     private static Connection conn = GlobalClass.mModel.getConn();
     private static final String TAG = "PollService";
-
+    public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     static final LatLng Corner1 = new LatLng(35.616759, -82.566081);
@@ -98,9 +101,12 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
-        //moveMarker();
+
+        BroadcastReceiver br = new StartupReceiver();
+        IntentFilter filter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
+        this.registerReceiver(br,filter);
         PollService.setServiceAlarm(this,true);{
-            moveMarker();
+            //moveMarker();
             startService(intent);
         }
 
@@ -189,7 +195,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
      * this updates the position of the marker by calling myTask
      */
 
-    private static void moveMarker() {
+    public static void moveMarker() {
         if (latitude != null) {
             robotlat = GlobalClass.mModel.getLatitude();
             robotlong = GlobalClass.mModel.getLongitude();
@@ -379,7 +385,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
            // System.out.println("Data base selection success");
 
-           // moveMarker();
+           sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
         }

@@ -1,10 +1,14 @@
 package com.b.earthdrone;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,10 +30,10 @@ public class Dash_Activity extends AppCompatActivity  {
     private Button mMap_button;
     private Button mconnection_button;
     private static boolean clicked;
-    private  TextView mlatitude_text;
-    private  TextView mlongitude_text;
-    private  TextView mdistance_text;
-    private  TextView morientation_text;
+    public static TextView mlatitude_text;
+    public  static TextView mlongitude_text;
+    public static  TextView mdistance_text;
+    public  static TextView morientation_text;
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
@@ -49,6 +53,11 @@ public class Dash_Activity extends AppCompatActivity  {
         mdistance_text=(TextView)findViewById(R.id.distance_text);
         morientation_text=(TextView)findViewById(R.id.orien);
 
+        BroadcastReceiver br = new DashReceiver();
+        IntentFilter filter = new IntentFilter(Map_Activity.ROBOT_POSTION_MOVE_MARKER);
+        this.registerReceiver(br,filter);
+
+      /*
         GlobalClass.mModel.addObserver(new Observer() {
             @Override
             public  void update(Observable observable, Object o) {
@@ -61,6 +70,8 @@ public class Dash_Activity extends AppCompatActivity  {
 
 
         });
+
+       */
 
 
 
@@ -122,10 +133,12 @@ public class Dash_Activity extends AppCompatActivity  {
                 mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
                 mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
                 mdistance_text.setText(GlobalClass.mModel.getDistance());
-                morientation_text.postDelayed(mUpdate, 0);
+               /* morientation_text.postDelayed(mUpdate, 0);
                 mlatitude_text.postDelayed(mUpdate, 0);
                 mlongitude_text.postDelayed(mUpdate, 0);
                 mdistance_text.postDelayed(mUpdate, 0);
+
+                */
                 }
             });
 
@@ -136,15 +149,12 @@ public class Dash_Activity extends AppCompatActivity  {
             mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
             mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
             mdistance_text.setText(GlobalClass.mModel.getDistance());
-            morientation_text.postDelayed(mUpdate, 0);
+           /* morientation_text.postDelayed(mUpdate, 0);
             mlatitude_text.postDelayed(mUpdate, 0);
             mlongitude_text.postDelayed(mUpdate, 0);
             mdistance_text.postDelayed(mUpdate, 0);
 
-
-
-
-
+            */
             }
 
 
@@ -166,7 +176,7 @@ public class Dash_Activity extends AppCompatActivity  {
         Intent intent = new Intent(this,Live_Activity.class );
         startActivity(intent);
     }
-    private Runnable mUpdate = new Runnable() {
+   /* private Runnable mUpdate = new Runnable() {
         public void run() {
             morientation_text.setText(GlobalClass.mModel.getOrientation());
             mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
@@ -176,6 +186,10 @@ public class Dash_Activity extends AppCompatActivity  {
 
         }
     };
+
+    */
+
+
 
 
 }
