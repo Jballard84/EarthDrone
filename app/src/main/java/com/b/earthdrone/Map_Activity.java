@@ -73,7 +73,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static final String TAG = "PollService";
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
-
+    private static  BroadcastReceiver MapReceiver = new StartupReceiver();
     static final LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
     static final LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
     static final LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
@@ -102,9 +102,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
 
-        BroadcastReceiver br = new StartupReceiver();
-        IntentFilter filter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
-        this.registerReceiver(br,filter);
+        //BroadcastReceiver br = new StartupReceiver();
+        IntentFilter mapfilter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
+        this.registerReceiver(MapReceiver,mapfilter);
         PollService.setServiceAlarm(this,true);{
             //moveMarker();
             startService(intent);
@@ -160,6 +160,18 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
         }
     };
+    public void onPause() {
+        super.onPause();
+
+        unregisterReceiver(MapReceiver);
+    }
+    public void onResume() {
+        super.onResume();
+
+        IntentFilter mapfilter = new IntentFilter();
+        mapfilter.addAction(ROBOT_POSTION_MOVE_MARKER);
+        registerReceiver(MapReceiver,mapfilter);
+    }
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -235,8 +247,8 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
         //to change how big the robots image is, change these next 2 variables
-        int imageWidth = 150;
-        int imageHeight = 150;
+        int imageWidth = 50;
+        int imageHeight = 50;
 
         BitmapDrawable drawableImage = (BitmapDrawable)getResources().getDrawable(R.drawable.walle);
         Bitmap b = drawableImage.getBitmap();
