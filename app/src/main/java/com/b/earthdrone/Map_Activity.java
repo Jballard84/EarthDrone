@@ -74,10 +74,10 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
-    static final LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
-    static final LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
-    static final LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
-    static final LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
+    static LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
+    static LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
+    static LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
+    static LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
 
     /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
@@ -230,13 +230,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
+        LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
         //to change how big the robots image is, change these next 2 variables
-        int imageWidth = 150;
-        int imageHeight = 150;
+        int imageWidth = 50;
+        int imageHeight = 50;
 
         BitmapDrawable drawableImage = (BitmapDrawable)getResources().getDrawable(R.drawable.walle);
         Bitmap b = drawableImage.getBitmap();
@@ -248,6 +248,8 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                 .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
                 );
         //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
+
+        /*
         robotFence = new PolylineOptions()
                 .add(
                         geofenceCorner1,
@@ -255,7 +257,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                         geofenceCorner3,
                         geofenceCorner4,
                         geofenceCorner1);
-        Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
+        mMap.addPolyline(robotFence.color(Color.RED));
+         */
+
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
@@ -284,6 +288,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                 .draggable(true));
         user_marker4.setPosition(geofenceCorner4);
 
+        
         LatLng getPositionMarker1 = user_marker1.getPosition();
         LatLng getPositionMarker2 = user_marker2.getPosition();
         LatLng getPositionMarker3 = user_marker3.getPosition();
