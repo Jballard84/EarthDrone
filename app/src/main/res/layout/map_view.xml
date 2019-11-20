@@ -37,7 +37,6 @@
         android:layout_height="match_parent"
         android:clipChildren="true" //>-->
 
-
     </LinearLayout>
 
     <LinearLayout

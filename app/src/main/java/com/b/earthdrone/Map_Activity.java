@@ -1,5 +1,6 @@
 package com.b.earthdrone;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,7 +11,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -230,13 +234,24 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final LatLng latLng = new LatLng(35.615965, -82.566009);
+        final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
-        robotPosition = mMap.addMarker(new MarkerOptions().position(latLng).title("Robot")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                //.icon(BitmapDescriptorFactory.fromResource(R.mipmap.))
+
+        //to change how big the robots image is, change these next 2 variables
+        int imageWidth = 150;
+        int imageHeight = 150;
+
+        BitmapDrawable drawableImage = (BitmapDrawable)getResources().getDrawable(R.drawable.walle);
+        Bitmap b = drawableImage.getBitmap();
+        Bitmap robotMarkerImage = Bitmap.createScaledBitmap(b,imageWidth,imageHeight,false);
+        robotPosition = mMap.addMarker(
+                new MarkerOptions()
+                .position(robotMarkerPosition)
+                .title("Robot")
+                .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
                 );
+        //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
         robotFence = new PolylineOptions()
                 .add(
                         Corner1,
@@ -249,7 +264,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        //mMap.setMyLocationEnabled(true);   COMMENTED THIS OUT TO WORK ON PHONE
+        //mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
         newlatLng = new LatLng(35.615992, -82.566879);
 
         Marker cornermarker1 = mMap.addMarker(new MarkerOptions()
