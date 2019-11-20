@@ -12,8 +12,8 @@ public class StartupReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "Received broadcast intent: " + intent.getAction());
         Map_Activity.moveMarker();
-       // boolean isOn = QueryPreferences.isAlarmOn(context);
-        //MapPollService.setServiceAlarm(context, isOn);
+
+
     }
 
 }

@@ -23,13 +23,15 @@ import java.sql.Statement;
 import java.util.Observable;
 import java.util.Observer;
 
+import static com.b.earthdrone.Map_Activity.ROBOT_POSTION_MOVE_MARKER;
+
 public class Dash_Activity extends AppCompatActivity  {
     private Button mLive_button;
     private Button mDash_button;
     private Button mControl_button;
     private Button mMap_button;
     private Button mconnection_button;
-    private static boolean clicked;
+    public static boolean clicked;
     public static TextView mlatitude_text;
     public  static TextView mlongitude_text;
     public static  TextView mdistance_text;
@@ -38,6 +40,7 @@ public class Dash_Activity extends AppCompatActivity  {
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
     private Handler mHandler;
+    private static  BroadcastReceiver dashReceiver = new DashReceiver();
     /**
      * Need to find out if I need a poll service in this activity if I have one running in map activity
      * @param savedInstanceState
@@ -53,46 +56,26 @@ public class Dash_Activity extends AppCompatActivity  {
         mdistance_text=(TextView)findViewById(R.id.distance_text);
         morientation_text=(TextView)findViewById(R.id.orien);
 
-        BroadcastReceiver br = new DashReceiver();
-        IntentFilter filter = new IntentFilter(Map_Activity.ROBOT_POSTION_MOVE_MARKER);
-        this.registerReceiver(br,filter);
+        morientation_text.setText("");
+        mlatitude_text.setText("");
+        mlongitude_text.setText("");
+        mdistance_text.setText("");
+        //Intent intent = new Intent(this, LiveViewPollService.class);
+        //startService(intent);
+        //LiveViewPollService.setServiceAlarm(this,true);{
+            //moveMarker();
+          //  startService(intent);
+        //}
 
-      /*
-        GlobalClass.mModel.addObserver(new Observer() {
-            @Override
-            public  void update(Observable observable, Object o) {
-                morientation_text.setText(GlobalClass.mModel.getOrientation());
-                mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
-                mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
-                mdistance_text.setText(GlobalClass.mModel.getDistance());
-            }
-
-
-
-        });
-
-       */
+        //BroadcastReceiver dashReceiver = new DashReceiver();
+        //IntentFilter dashfilter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
+        //this.registerReceiver(dashReceiver,dashfilter);
 
 
-
-
-
-       /* GlobalClass globalClass = new GlobalClass();
-        globalClass.setListener(new GlobalClass.ChangeListener() {
-            @Override
-            public void onChange() {
-                morientation_text.setText(GlobalClass.mModel.getOrientation());
-                mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
-                mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
-                mdistance_text.setText(GlobalClass.mModel.getDistance());
-            }
-        });
-
-        */
-
-
-
-
+       // dashReceiver = new DashReceiver();
+        IntentFilter dashfilter = new IntentFilter();
+        dashfilter.addAction(ROBOT_POSTION_MOVE_MARKER);// add any actions you want
+        registerReceiver(dashReceiver , dashfilter);
 
         mMap_button = (Button) findViewById(R.id.button1);
         mMap_button.setOnClickListener(new View.OnClickListener() {
@@ -133,12 +116,12 @@ public class Dash_Activity extends AppCompatActivity  {
                 mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
                 mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
                 mdistance_text.setText(GlobalClass.mModel.getDistance());
-               /* morientation_text.postDelayed(mUpdate, 0);
-                mlatitude_text.postDelayed(mUpdate, 0);
-                mlongitude_text.postDelayed(mUpdate, 0);
-                mdistance_text.postDelayed(mUpdate, 0);
+                //morientation_text.postDelayed(mUpdate, 0);
+                //mlatitude_text.postDelayed(mUpdate, 0);
+               // mlongitude_text.postDelayed(mUpdate, 0);
+               // mdistance_text.postDelayed(mUpdate, 0);
 
-                */
+
                 }
             });
 
@@ -149,12 +132,12 @@ public class Dash_Activity extends AppCompatActivity  {
             mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
             mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
             mdistance_text.setText(GlobalClass.mModel.getDistance());
-           /* morientation_text.postDelayed(mUpdate, 0);
-            mlatitude_text.postDelayed(mUpdate, 0);
-            mlongitude_text.postDelayed(mUpdate, 0);
-            mdistance_text.postDelayed(mUpdate, 0);
+            //morientation_text.postDelayed(mUpdate, 0);
+            //mlatitude_text.postDelayed(mUpdate, 0);
+            //mlongitude_text.postDelayed(mUpdate, 0);
+            //mdistance_text.postDelayed(mUpdate, 0);
 
-            */
+
             }
 
 
@@ -176,7 +159,22 @@ public class Dash_Activity extends AppCompatActivity  {
         Intent intent = new Intent(this,Live_Activity.class );
         startActivity(intent);
     }
-   /* private Runnable mUpdate = new Runnable() {
+
+    public void onPause() {
+        super.onPause();
+
+        unregisterReceiver(dashReceiver);
+    }
+    public void onResume() {
+        super.onResume();
+
+        IntentFilter dashfilter = new IntentFilter();
+        dashfilter.addAction(ROBOT_POSTION_MOVE_MARKER);
+        registerReceiver(dashReceiver,dashfilter);
+    }
+
+/*
+    private Runnable mUpdate = new Runnable() {
         public void run() {
             morientation_text.setText(GlobalClass.mModel.getOrientation());
             mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
@@ -187,7 +185,9 @@ public class Dash_Activity extends AppCompatActivity  {
         }
     };
 
-    */
+ */
+
+
 
 
 

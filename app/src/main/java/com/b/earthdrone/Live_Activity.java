@@ -18,10 +18,10 @@ public class Live_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.live_view);
 
-        Intent intent = new Intent(this, LiveViewPollService.class);
+        final Intent intent = new Intent(this, LiveViewPollService.class);
         startService(intent);
 
-        MapPollService.setServiceAlarm(this,true);{
+        LiveViewPollService.setServiceAlarm(this,true);{
             //moveMarker();
             startService(intent);
         }
@@ -30,6 +30,7 @@ public class Live_Activity extends AppCompatActivity {
         mMap_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view1) {
+                //do I need to kill the poll service
                 finish();
 
             }

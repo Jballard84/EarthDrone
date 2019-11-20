@@ -12,8 +12,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
+
+import static com.b.earthdrone.Map_Activity.ROBOT_POSTION_MOVE_MARKER;
 
 public class LiveViewPollService extends IntentService {
     private static final String TAG = "LiveViewPollService";
@@ -28,11 +31,11 @@ public class LiveViewPollService extends IntentService {
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     public static Intent newIntent(Context context) {
-        return new Intent(context, MapPollService.class);
+        return new Intent(context, LiveViewPollService.class);
     }
 
     public static void setServiceAlarm(Context context, boolean isOn) {
-        Intent i = MapPollService.newIntent(context);
+        Intent i = LiveViewPollService.newIntent(context);
         PendingIntent pi = PendingIntent.getService(
                 context, 0, i, 0);
 
@@ -49,7 +52,7 @@ public class LiveViewPollService extends IntentService {
     }
 
     public static boolean isServiceAlarmOn(Context context) {
-        Intent i = MapPollService.newIntent(context);
+        Intent i = LiveViewPollService.newIntent(context);
         PendingIntent pi = PendingIntent
                 .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
         return pi != null;
@@ -60,7 +63,7 @@ public class LiveViewPollService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected void onHandleIntent(Intent intent) {// this is where we will change the code to view images from the database
         Log.i(TAG,"Recieved an intent"+ intent);
         String res = "";
 
@@ -108,5 +111,9 @@ public class LiveViewPollService extends IntentService {
 
 
     }
+
+
+
+
 
 }
