@@ -14,8 +14,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
-import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -38,7 +36,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
@@ -76,11 +73,19 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static final String TAG = "PollService";
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
-    private static BroadcastReceiver br = new StartupReceiver();
+
     static final LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
     static final LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
     static final LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
     static final LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
+
+    /**
+     * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
+     * now I can not reference them when I run my task
+     *
+     * @param savedInstanceState
+     */
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,14 +102,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
 
-        PollService.setServiceAlarm(this, true);
-        {
+        BroadcastReceiver br = new StartupReceiver();
+        IntentFilter filter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
+        this.registerReceiver(br,filter);
+        PollService.setServiceAlarm(this,true);{
             //moveMarker();
             startService(intent);
-
         }
-        IntentFilter filter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
-        this.registerReceiver(br, filter);
 
 
         mLive_button = (Button) findViewById(R.id.button1);
@@ -149,21 +153,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, Dash_Activity.class);
         startActivity(intent);
     }
+    private Runnable mUpdate = new Runnable() {
+        public void run() {
 
+            moveMarker();
 
-    public void onPause() {
-        super.onPause();
-
-        unregisterReceiver(br);
-    }
-
-    public void onResume() {
-        super.onResume();
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ROBOT_POSTION_MOVE_MARKER);
-        registerReceiver(br, filter);
-    }
+        }
+    };
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -178,6 +174,22 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         return false;
     }
 
+
+    /**
+     * this updates the position of the marker on the map
+     */
+    private static void moveMarker(double lat, double lon) {
+        robotlat = lat;
+        robotlong = lon;
+        if (mMap != null) {
+            newlatLng = new LatLng(robotlat, robotlong);
+            if (marker != false) {
+                robotPosition.setPosition(newlatLng);
+            }//end of if the marker is already there
+            robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+        }//end of if map is created
+
+    }
 
     /**
      * this updates the position of the marker by calling myTask
@@ -195,12 +207,15 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
             System.out.printf("%f %f", robotlat, robotlong);
             robotPosition.setPosition(newlatLng);
+            //end of if the marker is already there
+            //robotPosition.remove();
+            //robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
-            System.out.println("Database is Connected and map is created");
+            System.out.println("Database is not connected but map is created");
 
-        }//end of if map is created
+            }//end of if map is created
 
-        else {
+        else{
             System.out.println("Database is not connected and map is not created");
         }
 
@@ -215,31 +230,72 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);
+        final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
-        //to change how big the robots image is, change these next 2 variables
 
-        robotPosition = mMap.addMarker(new MarkerOptions().position(robotMarkerPosition).title("Robot"));
+        //to change how big the robots image is, change these next 2 variables
+        int imageWidth = 150;
+        int imageHeight = 150;
+
+        BitmapDrawable drawableImage = (BitmapDrawable)getResources().getDrawable(R.drawable.walle);
+        Bitmap b = drawableImage.getBitmap();
+        Bitmap robotMarkerImage = Bitmap.createScaledBitmap(b,imageWidth,imageHeight,false);
+        robotPosition = mMap.addMarker(
+                new MarkerOptions()
+                .position(robotMarkerPosition)
+                .title("Robot")
+                .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
+                );
+        //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
         robotFence = new PolylineOptions()
                 .add(
-                        new LatLng(35.616759, -82.566081),
-                        new LatLng(35.615992, -82.566879),
-                        new LatLng(35.615243, -82.565706),
-                        new LatLng(35.615999, -82.564857),
-                        new LatLng(35.616759, -82.566081));
+                        geofenceCorner1,
+                        geofenceCorner2,
+                        geofenceCorner3,
+                        geofenceCorner4,
+                        geofenceCorner1);
         Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
-        mMap.moveCamera(CameraUpdateFactory. newLatLngZoom(UNCA_Quad, 18));
-        mMap.setMyLocationEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
+        mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
         newlatLng = new LatLng(35.615992, -82.566879);
+
+        Marker user_marker1 = mMap.addMarker(new MarkerOptions()
+                .position(geofenceCorner1)
+                .title("Corner 1")
+                .draggable(true));
+        user_marker1.setPosition(geofenceCorner1);
+        Marker user_marker2 = mMap.addMarker(new MarkerOptions()
+                .position(geofenceCorner2)
+                .title("Corner 2")
+                .draggable(true));
+        user_marker2.setPosition(geofenceCorner2);
+        Marker user_marker3 = mMap.addMarker(new MarkerOptions()
+                .position(geofenceCorner3)
+                .title("Corner 3")
+                .draggable(true));
+        user_marker3.setPosition(geofenceCorner3);
+        Marker user_marker4 = mMap.addMarker(new MarkerOptions()
+                .position(geofenceCorner4)
+                .title("Corner 4")
+                .draggable(true));
+        user_marker4.setPosition(geofenceCorner4);
+
+        LatLng getPositionMarker1 = user_marker1.getPosition();
+        LatLng getPositionMarker2 = user_marker2.getPosition();
+        LatLng getPositionMarker3 = user_marker3.getPosition();
+        LatLng getPositionMarker4 = user_marker4.getPosition();
+        /*
+        System.out.println("Marker1 Position: " + getPositionMarker1 + "\n");
+        System.out.println("Marker2 Position: " + getPositionMarker2 + "\n");
+        System.out.println("Marker3 Position: " + getPositionMarker3 + "\n");
+        System.out.println("Marker4 Position: " + getPositionMarker4 + "\n");
+        */
+
     }
-
-
-
-
 
 
 
@@ -285,84 +341,170 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
             String res = "";
 
 
-            try {
-                Class.forName("org.mariadb.jdbc.Driver");
-                try {
+               try {
+                   Class.forName("org.mariadb.jdbc.Driver");
+                   try {
+                       try {
+                           if (conn == null) {
+                               conn = DriverManager.getConnection(url, user, pass);
 
-                    try {
-                        if (conn == null) {
-                            conn = DriverManager.getConnection(url, user, pass);
+                               GlobalClass.mModel.setConn(conn);
+                               System.out.println("Database connection success");
+                           } else {
+                               System.out.println("Database is connected");
 
-                            GlobalClass.mModel.setConn(conn);
-                            System.out.println("Database connection success");
-                        } else {
-                            System.out.println("Database is connected");
+                           }
 
-                        }
+                           Statement st1 = conn.createStatement();
+                           ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           or.next();
+                           ResultSetMetaData rsmd1 = or.getMetaData();
+                           orientation = or.getString(1).toString();
+                           GlobalClass.mModel.setOrientation(orientation);
 
-                        Statement st1 = conn.createStatement();
-                        ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        or.next();
-                        ResultSetMetaData rsmd1 = or.getMetaData();
-                        orientation = or.getString(1).toString();
-                        GlobalClass.mModel.setOrientation(orientation);
+                           Statement st2 = conn.createStatement();
+                           ResultSet lat = st2.executeQuery("select distinct Lat from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lat.next();
+                           ResultSetMetaData rsmd2 = lat.getMetaData();
+                           latitude = lat.getString(1);
 
-                        Statement st2 = conn.createStatement();
-                        ResultSet lat = st2.executeQuery("select distinct Lat from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        lat.next();
-                        ResultSetMetaData rsmd2 = lat.getMetaData();
-                        latitude = lat.getString(1);
+                           GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
 
-                        GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
+                           Statement st3 = conn.createStatement();
+                           ResultSet lon = st3.executeQuery("select distinct Lon from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lon.next();
+                           ResultSetMetaData rsmd3 = lon.getMetaData();
+                           longitude = lon.getString(1).toString();
+                           GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
 
-                        Statement st3 = conn.createStatement();
-                        ResultSet lon = st3.executeQuery("select distinct Lon from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        lon.next();
-                        ResultSetMetaData rsmd3 = lon.getMetaData();
-                        longitude = lon.getString(1).toString();
-                        GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
+                           Statement st4 = conn.createStatement();
+                           ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           dis.next();
+                           ResultSetMetaData rsmd4 = or.getMetaData();
+                           distance = dis.getString(1).toString();
+                           GlobalClass.mModel.setDistance(distance);
+                       }catch (SQLNonTransientConnectionException e) {
+                           e.printStackTrace();
+                           System.out.println("Data base connection was not a success");
+                       }
 
-                        Statement st4 = conn.createStatement();
-                        ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        dis.next();
-                        ResultSetMetaData rsmd4 = or.getMetaData();
-                        distance = dis.getString(1).toString();
-                        GlobalClass.mModel.setDistance(distance);
-                    } catch (SQLNonTransientConnectionException e) {
-                        e.printStackTrace();
-                        System.out.println("Data base connection was not a success");
-                    }
+                   } catch (Exception e) {
+                       e.printStackTrace();
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                   }
 
-                }
-
-                StringBuilder sb = new StringBuilder();
-
-
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
+                   StringBuilder sb = new StringBuilder();
 
 
-            // System.out.println("Data base selection success");
-         /*   try {
-                if (conn !=null){
-                    conn.close();
-            }else{
-                    System.out.println("Connection is already closed");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+               } catch (ClassNotFoundException ex) {
+                   ex.printStackTrace();
+               }
 
-          */
-            sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
+
+
+           // System.out.println("Data base selection success");
+
+           sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
         }
 
+
+/*
+    private boolean isNetworkAvailableAndConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
+        boolean isNetworkConnected = isNetworkAvailable &&
+                cm.getActiveNetworkInfo().isConnected();
+
+        return isNetworkConnected;
+
+*/
+    }
+}
+/*
+
+
+     // myTask gets all of the variables for the dashboard
+
+public static class MyTask extends AsyncTask<String, Void, String> {
+    String res = "";
+
+    @Override
+    protected String doInBackground(String... strings) {
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+            try {
+                if (conn == null) {
+                    conn = DriverManager.getConnection(url, user, pass);
+                    GlobalClass.mModel.setConn(conn);
+                    System.out.println("Database connection success");
+                } else {
+                    System.out.println("Database is connected");
+
+                }
+
+                Statement st1 = conn.createStatement();
+                ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                or.next();
+                ResultSetMetaData rsmd1 = or.getMetaData();
+                orientation = or.getString(1).toString();
+                GlobalClass.mModel.setOrientation(orientation);
+
+                Statement st2 = conn.createStatement();
+                ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                lat.next();
+                ResultSetMetaData rsmd2 = lat.getMetaData();
+                latitude = lat.getString(1).toString();
+                GlobalClass.mModel.setLatitude(latitude);
+
+                Statement st3 = conn.createStatement();
+                ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                lon.next();
+                ResultSetMetaData rsmd3 = lon.getMetaData();
+                longitude = lon.getString(1).toString();
+                GlobalClass.mModel.setLongitude(longitude);
+
+                Statement st4 = conn.createStatement();
+                ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                dis.next();
+                ResultSetMetaData rsmd4 = or.getMetaData();
+                distance = dis.getString(1).toString();
+                GlobalClass.mModel.setDistance(distance);
+
+                res = orientation + latitude + longitude + distance;
+            } catch (Exception e) {
+                e.printStackTrace();
+                res = e.toString();
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+
+            return res;
+
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        System.out.println("Data base selection success");
+
+
+        return null;
     }
 
-}
+    protected void onPostExecute(String result) {
+        morientation_text.setText(orientation);
+        // GlobalClass.morientation_text=morientation_text;
+        mlatitude_text.setText(latitude);
+        //GlobalClass.mlatitude_text= mlatitude_text;
+        mlongitude_text.setText(longitude);
+        //GlobalClass.mlongitude_text=mlongitude_text;
+        mdistance_text.setText(distance);
+        //GlobalClass.mdistance_text= mdistance_text;
+    }
+
+}//mytask
+
+ */
