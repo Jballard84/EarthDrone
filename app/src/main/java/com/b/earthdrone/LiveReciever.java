@@ -5,15 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-public class StartupReceiver extends BroadcastReceiver{
+public class LiveReciever extends BroadcastReceiver {
     private static final String TAG = "StartupReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "Received broadcast intent: " + intent.getAction());
-        Map_Activity.moveMarker();
-       // boolean isOn = QueryPreferences.isAlarmOn(context);
-        //MapPollService.setServiceAlarm(context, isOn);
-    }
 
+    }
 }
+
+

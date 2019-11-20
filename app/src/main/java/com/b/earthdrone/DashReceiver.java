@@ -16,6 +16,6 @@ public class DashReceiver extends BroadcastReceiver    {
             Dash_Activity.mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
             Dash_Activity.mdistance_text.setText(GlobalClass.mModel.getDistance());
         // boolean isOn = QueryPreferences.isAlarmOn(context);
-        //PollService.setServiceAlarm(context, isOn);
+        //MapPollService.setServiceAlarm(context, isOn);
     }
 }

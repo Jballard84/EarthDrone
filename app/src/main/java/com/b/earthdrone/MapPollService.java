@@ -2,18 +2,11 @@ package com.b.earthdrone;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,8 +15,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
-public class PollService extends IntentService {
-    private static final String TAG = "PollService";
+public class MapPollService extends IntentService {
+    private static final String TAG = "MapPollService";
     private static String latitude;
     private static String longitude;
     private static String orientation;
@@ -35,11 +28,11 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     public static Intent newIntent(Context context) {
-        return new Intent(context, PollService.class);
+        return new Intent(context, MapPollService.class);
     }
 
     public static void setServiceAlarm(Context context, boolean isOn) {
-        Intent i = PollService.newIntent(context);
+        Intent i = MapPollService.newIntent(context);
         PendingIntent pi = PendingIntent.getService(
                 context, 0, i, 0);
 
@@ -56,13 +49,13 @@ public class PollService extends IntentService {
     }
 
     public static boolean isServiceAlarmOn(Context context) {
-        Intent i = PollService.newIntent(context);
+        Intent i = MapPollService.newIntent(context);
         PendingIntent pi = PendingIntent
                 .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
         return pi != null;
     }
 
-    public PollService() {
+    public MapPollService() {
         super(TAG);
     }
 
@@ -131,7 +124,7 @@ public class PollService extends IntentService {
 
 
         //this is where I will do my code but dont know how
-
+        sendBroadcast(new Intent(Map_Activity.ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
     }
