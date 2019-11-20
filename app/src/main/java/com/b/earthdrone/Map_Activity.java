@@ -250,14 +250,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
 
         /*
-        robotFence = new PolylineOptions()
-                .add(
-                        geofenceCorner1,
-                        geofenceCorner2,
-                        geofenceCorner3,
-                        geofenceCorner4,
-                        geofenceCorner1);
-        mMap.addPolyline(robotFence.color(Color.RED));
+
          */
 
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
@@ -288,7 +281,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                 .draggable(true));
         user_marker4.setPosition(geofenceCorner4);
 
-        
+
         LatLng getPositionMarker1 = user_marker1.getPosition();
         LatLng getPositionMarker2 = user_marker2.getPosition();
         LatLng getPositionMarker3 = user_marker3.getPosition();
@@ -302,6 +295,18 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
     }
 
+    /*
+    public void drawGeofence(LatLng geofenceCorner1, LatLng geofenceCorner2, LatLng geofenceCorner3, LatLng geofenceCorner4){
+        robotFence = new PolylineOptions()
+                .add(
+                        geofenceCorner1,
+                        geofenceCorner2,
+                        geofenceCorner3,
+                        geofenceCorner4,
+                        geofenceCorner1);
+        mMap.addPolyline(robotFence.color(Color.RED));
+    }
+     */
 
 
     public static class PollService extends IntentService {
