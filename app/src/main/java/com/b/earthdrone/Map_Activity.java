@@ -264,7 +264,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        //mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
+        mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
         newlatLng = new LatLng(35.615992, -82.566879);
 
         Marker cornermarker1 = mMap.addMarker(new MarkerOptions()
