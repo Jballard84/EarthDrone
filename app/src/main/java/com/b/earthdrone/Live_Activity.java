@@ -11,18 +11,26 @@ public class Live_Activity extends AppCompatActivity {
     private Button mDash_button;
     private Button mControl_button;
     private Button mMap_button;
+    public static final String ROBOT_VIEW = "com.b.earthdrone.SHOW_NOTIFICATION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.live_view);
 
+        final Intent intent = new Intent(this, LiveViewPollService.class);
+        startService(intent);
 
+        LiveViewPollService.setServiceAlarm(this,true);{
+            //moveMarker();
+            startService(intent);
+        }
 
         mMap_button = (Button) findViewById(R.id.button1);
         mMap_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view1) {
+                //do I need to kill the poll service
                 finish();
 
             }

@@ -2,28 +2,24 @@ package com.b.earthdrone;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
-public class PollService extends IntentService {
-    private static final String TAG = "PollService";
+import static com.b.earthdrone.Map_Activity.ROBOT_POSTION_MOVE_MARKER;
+
+public class LiveViewPollService extends IntentService {
+    private static final String TAG = "LiveViewPollService";
     private static String latitude;
     private static String longitude;
     private static String orientation;
@@ -35,11 +31,11 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     public static Intent newIntent(Context context) {
-        return new Intent(context, PollService.class);
+        return new Intent(context, LiveViewPollService.class);
     }
 
     public static void setServiceAlarm(Context context, boolean isOn) {
-        Intent i = PollService.newIntent(context);
+        Intent i = LiveViewPollService.newIntent(context);
         PendingIntent pi = PendingIntent.getService(
                 context, 0, i, 0);
 
@@ -56,18 +52,18 @@ public class PollService extends IntentService {
     }
 
     public static boolean isServiceAlarmOn(Context context) {
-        Intent i = PollService.newIntent(context);
+        Intent i = LiveViewPollService.newIntent(context);
         PendingIntent pi = PendingIntent
                 .getService(context, 0, i, PendingIntent.FLAG_NO_CREATE);
         return pi != null;
     }
 
-    public PollService() {
+    public LiveViewPollService() {
         super(TAG);
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected void onHandleIntent(Intent intent) {// this is where we will change the code to view images from the database
         Log.i(TAG,"Recieved an intent"+ intent);
         String res = "";
 
@@ -91,26 +87,6 @@ public class PollService extends IntentService {
                 orientation = or.getString(1).toString();
                 GlobalClass.mModel.setOrientation(orientation);
 
-                Statement st2 = conn.createStatement();
-                ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                lat.next();
-                ResultSetMetaData rsmd2 = lat.getMetaData();
-                latitude = lat.getString(1).toString();
-                GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
-
-                Statement st3 = conn.createStatement();
-                ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                lon.next();
-                ResultSetMetaData rsmd3 = lon.getMetaData();
-                longitude = lon.getString(1).toString();
-                GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
-
-                Statement st4 = conn.createStatement();
-                ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                dis.next();
-                ResultSetMetaData rsmd4 = or.getMetaData();
-                distance = dis.getString(1).toString();
-                GlobalClass.mModel.setDistance(distance);
 
                 res = orientation + latitude + longitude + distance;
             } catch (Exception e) {
@@ -131,22 +107,13 @@ public class PollService extends IntentService {
 
 
         //this is where I will do my code but dont know how
-
+        sendBroadcast(new Intent(Live_Activity.ROBOT_VIEW));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
     }
 
 
-/*
-    private boolean isNetworkAvailableAndConnected() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 
-        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
-        boolean isNetworkConnected = isNetworkAvailable &&
-                cm.getActiveNetworkInfo().isConnected();
 
-        return isNetworkConnected;
 
-*/
 }

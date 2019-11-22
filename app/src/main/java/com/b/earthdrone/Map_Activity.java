@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
@@ -41,10 +42,14 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 
-public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener,
+public class Map_Activity extends AppCompatActivity
+    implements
+        GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
-        OnMapReadyCallback {
-
+        GoogleMap.OnMarkerDragListener,
+        //GoogleMap.OnMarkerClickListener,
+        OnMapReadyCallback
+    {
 
     private Button mLive_button;
     private Button mDash_button;
@@ -73,13 +78,22 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static final String TAG = "PollService";
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
+    private static BroadcastReceiver MapReceiver = new StartupReceiver();
 
-    static LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
-    static LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
-    static LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
-    static LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
+    private static LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
+    private static LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
+    private static LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
+    private static LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
 
-    /**
+    private static Marker user_marker1;
+    private static Marker user_marker2;
+    private static Marker user_marker3;
+    private static Marker user_marker4;
+
+    private static Polyline polyline;
+
+
+        /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
      * now I can not reference them when I run my task
      *
@@ -102,9 +116,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
 
-        BroadcastReceiver br = new StartupReceiver();
-        IntentFilter filter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
-        this.registerReceiver(br,filter);
+        //BroadcastReceiver br = new StartupReceiver();
+        IntentFilter mapfilter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
+        this.registerReceiver(MapReceiver,mapfilter);
         PollService.setServiceAlarm(this,true);{
             //moveMarker();
             startService(intent);
@@ -160,6 +174,18 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
         }
     };
+    public void onPause() {
+        super.onPause();
+
+        unregisterReceiver(MapReceiver);
+    }
+    public void onResume() {
+        super.onResume();
+
+        IntentFilter mapfilter = new IntentFilter();
+        mapfilter.addAction(ROBOT_POSTION_MOVE_MARKER);
+        registerReceiver(MapReceiver,mapfilter);
+    }
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
@@ -228,8 +254,10 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
      * @param googleMap
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(GoogleMap googleMap){
         mMap = googleMap;
+        //mMap.setOnMarkerClickListener(this);
+        mMap.setOnMarkerDragListener(this);
         LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
@@ -249,64 +277,81 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                 );
         //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
 
-        /*
-
-         */
-
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
-        newlatLng = new LatLng(35.615992, -82.566879);
+        //mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
+        //newlatLng = new LatLng(35.615992, -82.566879);
 
-        Marker user_marker1 = mMap.addMarker(new MarkerOptions()
+        user_marker1 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner1)
                 .title("Corner 1")
                 .draggable(true));
         user_marker1.setPosition(geofenceCorner1);
-        Marker user_marker2 = mMap.addMarker(new MarkerOptions()
+        user_marker2 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner2)
                 .title("Corner 2")
                 .draggable(true));
         user_marker2.setPosition(geofenceCorner2);
-        Marker user_marker3 = mMap.addMarker(new MarkerOptions()
+        user_marker3 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner3)
                 .title("Corner 3")
                 .draggable(true));
         user_marker3.setPosition(geofenceCorner3);
-        Marker user_marker4 = mMap.addMarker(new MarkerOptions()
+        user_marker4 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner4)
                 .title("Corner 4")
                 .draggable(true));
         user_marker4.setPosition(geofenceCorner4);
 
+    }
 
-        LatLng getPositionMarker1 = user_marker1.getPosition();
-        LatLng getPositionMarker2 = user_marker2.getPosition();
-        LatLng getPositionMarker3 = user_marker3.getPosition();
-        LatLng getPositionMarker4 = user_marker4.getPosition();
-        /*
-        System.out.println("Marker1 Position: " + getPositionMarker1 + "\n");
-        System.out.println("Marker2 Position: " + getPositionMarker2 + "\n");
-        System.out.println("Marker3 Position: " + getPositionMarker3 + "\n");
-        System.out.println("Marker4 Position: " + getPositionMarker4 + "\n");
-        */
+    public void onMarkerDrag(Marker marker) {
+    }
+
+    public void onMarkerDragStart(Marker marker) {
+    }
+
+    public void onMarkerDragEnd(Marker marker) {
+
+        if (marker.equals(user_marker1)){
+            Log.d(TAG, "Marker 1 : " + marker.getPosition() );
+        }
+        if (marker.equals(user_marker2)){
+            Log.d(TAG, "Marker 2 : " + marker.getPosition() );
+        }
+        if (marker.equals(user_marker3)){
+            Log.d(TAG, "Marker 3 : " + marker.getPosition() );
+        }
+        if (marker.equals(user_marker4)){
+            Log.d(TAG, "Marker 4 : " + marker.getPosition() );
+        }
+        if (polyline==null){
+            drawGeofence(user_marker1.getPosition(),user_marker2.getPosition(),user_marker3.getPosition(),user_marker4.getPosition());
+        }
+        else {
+            polyline.remove();
+            drawGeofence(user_marker1.getPosition(), user_marker2.getPosition(), user_marker3.getPosition(), user_marker4.getPosition());
+        }
 
     }
 
-    /*
-    public void drawGeofence(LatLng geofenceCorner1, LatLng geofenceCorner2, LatLng geofenceCorner3, LatLng geofenceCorner4){
+
+    public void drawGeofence(LatLng corner1, LatLng corner2, LatLng corner3, LatLng corner4){
+
         robotFence = new PolylineOptions()
-                .add(
-                        geofenceCorner1,
-                        geofenceCorner2,
-                        geofenceCorner3,
-                        geofenceCorner4,
-                        geofenceCorner1);
-        mMap.addPolyline(robotFence.color(Color.RED));
+            .add(
+                corner1,
+                corner2,
+                corner3,
+                corner4,
+                corner1
+            );
+
+        polyline = mMap.addPolyline(robotFence.color(Color.RED));
+
     }
-     */
 
 
     public static class PollService extends IntentService {
