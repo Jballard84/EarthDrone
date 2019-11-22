@@ -242,8 +242,8 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
-        //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
+        //final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
+        final  LatLng latLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
         //to change how big the robots image is, change these next 2 variables
@@ -255,7 +255,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Bitmap robotMarkerImage = Bitmap.createScaledBitmap(b,imageWidth,imageHeight,false);
         robotPosition = mMap.addMarker(
                 new MarkerOptions()
-                .position(robotMarkerPosition)
+                .position(latLng)
                 .title("Robot")
                 .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
                 );
@@ -269,6 +269,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                         geofenceCorner1);
         Polyline polyline = mMap.addPolyline(robotFence.color(Color.RED));
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
+
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
