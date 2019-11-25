@@ -30,6 +30,7 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -129,17 +130,32 @@ public class Map_Activity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
 
-        //mlatitude_text=(TextView)findViewById(R.id.lat);
-        //mlongitude_text=(TextView)findViewById(R.id.lon);
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);// want to put a flag so I know when the map is ready
+        createLocationRequest();
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location loc : locationResult.getLocations()) {
+                    // Update UI with location data
+                    // ...
+                    System.out.println(loc);
+                    location = loc;
 
+
+                }
+            }
+        };
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient.getLastLocation();
 
-        //BroadcastReceiver br = new StartupReceiver();
+
         IntentFilter mapfilter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
         this.registerReceiver(MapReceiver,mapfilter);
         PollService.setServiceAlarm(this,true);{
@@ -208,6 +224,7 @@ public class Map_Activity extends AppCompatActivity
         IntentFilter mapfilter = new IntentFilter();
         mapfilter.addAction(ROBOT_POSTION_MOVE_MARKER);
         registerReceiver(MapReceiver,mapfilter);
+        startLocationUpdates();
     }
 
     @Override
