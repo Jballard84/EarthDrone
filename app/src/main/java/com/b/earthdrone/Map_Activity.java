@@ -2,7 +2,9 @@ package com.b.earthdrone;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -11,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -30,6 +33,7 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -115,7 +119,6 @@ public class Map_Activity extends AppCompatActivity
     private static Location location;
     private static Polyline polyline;
 
-
         /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
      * now I can not reference them when I run my task
@@ -136,6 +139,8 @@ public class Map_Activity extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);// want to put a flag so I know when the map is ready
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient.getLastLocation();
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
 
@@ -208,6 +213,55 @@ public class Map_Activity extends AppCompatActivity
         IntentFilter mapfilter = new IntentFilter();
         mapfilter.addAction(ROBOT_POSTION_MOVE_MARKER);
         registerReceiver(MapReceiver,mapfilter);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location loc : locationResult.getLocations()) {
+                    // Update UI with location data
+                    // ...
+                    System.out.println(loc);
+                    location = loc;
+                    //MyTask myTask = new MyTask(location);
+                    //myTask.execute();
+                }
+            }
+        };
+        startLocationUpdates();
+        createLocationRequest();
+
+        boolean permissionAccessCoarseLocationApproved =
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED;
+        if (permissionAccessCoarseLocationApproved) {
+            boolean backgroundLocationPermissionApproved =
+                    ActivityCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED;
+            if (backgroundLocationPermissionApproved) {
+                // App can access location both in the foreground and in the background.
+                // Start your service that doesn't have a foreground service type
+                // defined.
+            } else {
+                // App can only access location in the foreground. Display a dialog
+                // warning the user that your app must have all-the-time access to
+                // location in order to function properly. Then, request background
+                // location.
+                ActivityCompat.requestPermissions(this, new String[] {
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 1);
+            }
+        } else {
+            // App doesn't have access to the device's location at all. Make full request
+            // for permission.
+            ActivityCompat.requestPermissions(this, new String[] {
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            }, 1);
+        }
+
     }
 
     @Override
@@ -253,14 +307,19 @@ public class Map_Activity extends AppCompatActivity
         if (mMap != null) {
 
             newlatLng = new LatLng(robotlat, robotlong);
-            GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat,robotlong,location.getLatitude(),location.getLongitude())));
+            if(location != null) {
+                GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat, robotlong, location.getLatitude(), location.getLongitude())));
+            }
+            else{
+                GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat, robotlong, robotlat, robotlong)));
+            }
             System.out.printf("%f %f", robotlat, robotlong);
             robotPosition.setPosition(newlatLng);
             //end of if the marker is already there
             //robotPosition.remove();
             //robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
-            System.out.println("Database is not connected but map is created");
+            System.out.println("Database is connected and map is created");
 
             }//end of if map is created
 
@@ -409,7 +468,8 @@ public class Map_Activity extends AppCompatActivity
                     ;
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             double distance = R * c; // Distance in km
-
+            double footconversion = 3280.84;
+            distance = distance * footconversion;
             return distance;
         }
 
@@ -569,8 +629,7 @@ public class Map_Activity extends AppCompatActivity
                }
 
 
-
-           // System.out.println("Data base selection success");
+            // System.out.println("Data base selection success");
 
 //            micheal place our lat and long here
            sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
