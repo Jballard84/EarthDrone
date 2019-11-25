@@ -260,6 +260,8 @@ public class Map_Activity extends AppCompatActivity
         mMap.setOnMarkerDragListener(this);
         LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
+        //final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
+        final  LatLng latLng = new LatLng(robotlat, robotlong);
         //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
         //to change how big the robots image is, change these next 2 variables
@@ -271,13 +273,14 @@ public class Map_Activity extends AppCompatActivity
         Bitmap robotMarkerImage = Bitmap.createScaledBitmap(b,imageWidth,imageHeight,false);
         robotPosition = mMap.addMarker(
                 new MarkerOptions()
-                .position(robotMarkerPosition)
+                .position(latLng)
                 .title("Robot")
                 .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
                 );
         //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
 
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
+
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
@@ -327,6 +330,8 @@ public class Map_Activity extends AppCompatActivity
         if (marker.equals(user_marker4)){
             Log.d(TAG, "Marker 4 : " + marker.getPosition() );
         }
+
+
         if (polyline==null){
             drawGeofence(user_marker1.getPosition(),user_marker2.getPosition(),user_marker3.getPosition(),user_marker4.getPosition());
         }
