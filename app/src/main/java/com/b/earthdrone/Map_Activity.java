@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,12 +18,22 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,6 +45,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -93,7 +108,11 @@ public class Map_Activity extends AppCompatActivity
     private static Marker user_marker2;
     private static Marker user_marker3;
     private static Marker user_marker4;
-
+    boolean requestingLocationUpdates = false;
+    private FusedLocationProviderClient fusedLocationClient;
+    private LocationRequest locationRequest = new LocationRequest();
+    private LocationCallback locationCallback;
+    private static Location location;
     private static Polyline polyline;
 
 
@@ -234,7 +253,7 @@ public class Map_Activity extends AppCompatActivity
         if (mMap != null) {
 
             newlatLng = new LatLng(robotlat, robotlong);
-            GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat,robotlong,robotlat,robotlong)));
+            GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat,robotlong,location.getLatitude(),location.getLongitude())));
             System.out.printf("%f %f", robotlat, robotlong);
             robotPosition.setPosition(newlatLng);
             //end of if the marker is already there
@@ -317,6 +336,61 @@ public class Map_Activity extends AppCompatActivity
     }
 
         /**
+         * this starts the location
+         */
+        private void startLocationUpdates() {
+            locationRequest.setInterval(1000);
+            locationRequest.setFastestInterval(1000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setSmallestDisplacement(0);
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper());
+            requestingLocationUpdates = true;
+        }
+
+        protected void createLocationRequest() {
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setInterval(1000);
+            locationRequest.setFastestInterval(1000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+
+// ...
+
+            SettingsClient client = LocationServices.getSettingsClient(this);
+            Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+            task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+                @Override
+                public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                    // All location settings are satisfied. The client can initialize
+                    // location requests here.
+                    // ...
+                }
+            });
+
+            task.addOnFailureListener(this, new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (e instanceof ResolvableApiException) {
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            ResolvableApiException resolvable = (ResolvableApiException) e;
+                            resolvable.startResolutionForResult(Map_Activity.this,
+                                    RESULT_OK);
+                        } catch (IntentSender.SendIntentException sendEx) {
+                            // Ignore the error.
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
          * this is how we calculate the distance between our location and the robots location
          * @param robotlat
          * @param robotlong
@@ -335,6 +409,7 @@ public class Map_Activity extends AppCompatActivity
                     ;
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             double distance = R * c; // Distance in km
+
             return distance;
         }
 
