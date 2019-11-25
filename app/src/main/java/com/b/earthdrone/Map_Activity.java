@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -68,6 +69,9 @@ public class Map_Activity extends AppCompatActivity
     private static LatLng newlatLng = new LatLng(robotlat, robotlong);
     private static GoogleMap mMap;
     private static Marker robotPosition;
+    private static double ourPositionLat;
+    private static double ourPositionLon;
+    private static   Location loc;
     private static boolean marker = false;
     private PolylineOptions robotFence;
     private static String latitude;
@@ -230,7 +234,7 @@ public class Map_Activity extends AppCompatActivity
         if (mMap != null) {
 
             newlatLng = new LatLng(robotlat, robotlong);
-
+            GlobalClass.mModel.setDistance(String.valueOf(getDistanceFromLatLonInKm(robotlat,robotlong,robotlat,robotlong)));
             System.out.printf("%f %f", robotlat, robotlong);
             robotPosition.setPosition(newlatLng);
             //end of if the marker is already there
@@ -284,8 +288,10 @@ public class Map_Activity extends AppCompatActivity
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        //mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
+        mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
         //newlatLng = new LatLng(35.615992, -82.566879);
+        // this is where you need to find out how to get our location
+
 
         user_marker1 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner1)
@@ -309,6 +315,33 @@ public class Map_Activity extends AppCompatActivity
         user_marker4.setPosition(geofenceCorner4);
 
     }
+
+        /**
+         * this is how we calculate the distance between our location and the robots location
+         * @param robotlat
+         * @param robotlong
+         * @param ourpositionlat
+         * @param ourpositionlon
+         * @return the distance to the global model variable distance
+         */
+        public static double getDistanceFromLatLonInKm(double robotlat,double robotlong ,double ourpositionlat,double ourpositionlon) {
+            int R = 6371; // Radius of the earth in km
+            double dLat = deg2rad(robotlat-ourpositionlat);  // deg2rad below
+            double dLon = deg2rad(robotlong-ourpositionlon);
+            double a =
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                            Math.cos(deg2rad(ourpositionlat)) * Math.cos(deg2rad(robotlat)) *
+                                    Math.sin(dLon/2) * Math.sin(dLon/2)
+                    ;
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            double distance = R * c; // Distance in km
+            return distance;
+        }
+
+        public static double deg2rad(double deg) {
+            deg=deg *(Math.PI/180);
+            return deg;
+        }
 
     public void onMarkerDrag(Marker marker) {
     }
@@ -464,6 +497,7 @@ public class Map_Activity extends AppCompatActivity
 
            // System.out.println("Data base selection success");
 
+//            micheal place our lat and long here
            sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
