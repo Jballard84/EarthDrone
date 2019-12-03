@@ -36,6 +36,7 @@ public class Dash_Activity extends AppCompatActivity  {
     public  static TextView mlongitude_text;
     public static  TextView mdistance_text;
     public  static TextView morientation_text;
+    public static TextView mbattery_text;
     private static final String url = "jdbc:mariadb://10.123.21.91:3306/myDB";
     private static final String user = "BallardPi";
     private static final String pass = "BallardPi";
@@ -51,11 +52,13 @@ public class Dash_Activity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dash_view);
 
+        mbattery_text=(TextView)findViewById(R.id.mbattery_text);
         mlatitude_text=(TextView)findViewById(R.id.lat);
         mlongitude_text=(TextView)findViewById(R.id.lon);
         mdistance_text=(TextView)findViewById(R.id.distance_text);
         morientation_text=(TextView)findViewById(R.id.orien);
 
+        mbattery_text.setText("");
         morientation_text.setText("");
         mlatitude_text.setText("");
         mlongitude_text.setText("");
@@ -112,7 +115,8 @@ public class Dash_Activity extends AppCompatActivity  {
                 mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
                 mconnection_button.setText(getResources().getText(R.string.connected));
                 clicked = true;
-                morientation_text.setText(GlobalClass.mModel.getOrientation());
+                mbattery_text.setText(String.valueOf(GlobalClass.mModel.getBattery()) + "%");
+                morientation_text.setText(GlobalClass.mModel.getOrientation() + "°");
                 mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
                 mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
                 mdistance_text.setText(GlobalClass.mModel.getDistance());
@@ -128,7 +132,9 @@ public class Dash_Activity extends AppCompatActivity  {
         if (clicked == true) {
             mconnection_button.setBackgroundColor(getResources().getColor(R.color.green));
             mconnection_button.setText(getResources().getText(R.string.connected));
-            morientation_text.setText(GlobalClass.mModel.getOrientation());
+
+            mbattery_text.setText(String.valueOf(GlobalClass.mModel.getBattery()) + "%");
+            morientation_text.setText(GlobalClass.mModel.getOrientation() + "°");
             mlatitude_text.setText(String.valueOf(GlobalClass.mModel.getLatitude()));
             mlongitude_text.setText(String.valueOf(GlobalClass.mModel.getLongitude()));
             mdistance_text.setText(GlobalClass.mModel.getDistance());
