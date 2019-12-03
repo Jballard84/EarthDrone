@@ -27,11 +27,11 @@
         app:layout_constraintTop_toTopOf="parent" >
 
 
-    <ImageView
-        android:id="@+id/imageView"
+    <WebView
+        android:id="@+id/WebView"
         android:layout_width="match_parent"
-        android:layout_height="611dp"
-        android:src="@drawable/liveview" />
+        android:layout_height="match_parent"
+         />
 </LinearLayout>
 
     <LinearLayout
