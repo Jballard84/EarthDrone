@@ -59,8 +59,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -98,7 +96,7 @@ public class Map_Activity extends AppCompatActivity
     private static String latitude;
     private static String longitude;
     private static String orientation;
-    private static String battery;
+    private static String distance;
     private static Connection conn = GlobalClass.mModel.getConn();
     private static final String TAG = "PollService";
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
@@ -472,8 +470,7 @@ public class Map_Activity extends AppCompatActivity
             double distance = R * c; // Distance in km
             double footconversion = 3280.84;
             distance = distance * footconversion;
-            NumberFormat nf = new DecimalFormat("#0.000000000");
-            return Double.valueOf(nf.format(distance));
+            return distance;
         }
 
         public static double deg2rad(double deg) {
@@ -612,9 +609,8 @@ public class Map_Activity extends AppCompatActivity
                            ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                            dis.next();
                            ResultSetMetaData rsmd4 = or.getMetaData();
-                           battery = dis.getString(1).toString();
-                           GlobalClass.mModel.setBattery(Integer.valueOf(battery));
-
+                           distance = dis.getString(1).toString();
+                           GlobalClass.mModel.setDistance(distance);
                        }catch (SQLNonTransientConnectionException e) {
                            e.printStackTrace();
                            System.out.println("Data base connection was not a success");
