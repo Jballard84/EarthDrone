@@ -15,8 +15,6 @@ import android.widget.VideoView;
 import android.widget.MediaController;
 import android.net.Uri;
 
-import com.squareup.picasso.Picasso;
-
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
