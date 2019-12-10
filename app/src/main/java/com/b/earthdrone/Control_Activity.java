@@ -13,10 +13,19 @@ public class Control_Activity extends AppCompatActivity {
     private Button mControl_button;
     private Button mMap_button;
 
+    private Button mLeftButton;
+    private Button mRightButton;
+    private Button mUpButton;
+    private Button mDownButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mLeftButton = (Button) findViewById(R.id.LEFT_ARROW);
+        mRightButton = (Button) findViewById(R.id.RIGHT_ARROW);
+        mUpButton = (Button) findViewById(R.id.UP_ARROW);
+        mDownButton = (Button) findViewById(R.id.DOWN_ARROW);
         setContentView(R.layout.control_view);
         mMap_button = (Button) findViewById(R.id.button1);
         mMap_button.setOnClickListener(new View.OnClickListener() {

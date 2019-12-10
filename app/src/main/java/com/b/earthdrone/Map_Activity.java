@@ -366,7 +366,7 @@ public class Map_Activity extends AppCompatActivity
         robotPosition.setPosition(UNCA_Quad);
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
-        mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
+        //mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
         //newlatLng = new LatLng(35.615992, -82.566879);
         // this is where you need to find out how to get our location
 

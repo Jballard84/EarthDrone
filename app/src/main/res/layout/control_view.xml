@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayout"
@@ -8,7 +10,7 @@
     android:background="@color/black"
     android:gravity="center">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/connection"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -24,12 +26,61 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Controller view" />
-    </LinearLayout>
+
+        <Button
+            android:id="@+id/UP_ARROW"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_marginStart="323dp"
+            android:layout_marginTop="85dp"
+            android:background="@drawable/arrow"
+            android:rotation="0"
+            android:scaleType="fitCenter"
+            android:src="?attr/actionModeCloseDrawable"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="?attr/homeAsUpIndicator" />
+
+        <Button
+            android:id="@+id/DOWN_ARROW"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_marginStart="323dp"
+            android:layout_marginTop="151dp"
+            android:background="@drawable/arrow"
+            android:rotation="180"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/UP_ARROW"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+        <Button
+            android:id="@+id/LEFT_ARROW"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_marginStart="162dp"
+            android:layout_marginTop="220dp"
+            android:background="@drawable/arrow"
+            android:rotation="270"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+        <Button
+            android:id="@+id/RIGHT_ARROW"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_marginStart="198dp"
+            android:layout_marginTop="220dp"
+            android:background="@drawable/arrow"
+            android:rotation="90"
+            app:layout_constraintStart_toEndOf="@+id/LEFT_ARROW"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="?attr/actionModeCloseDrawable" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <LinearLayout
         android:id="@+id/linearLayout3"
