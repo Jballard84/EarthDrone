@@ -3,6 +3,7 @@ package com.b.earthdrone;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -17,7 +18,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
@@ -25,6 +28,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -48,6 +52,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -57,10 +62,14 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 
-public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener, GoogleMap.OnMarkerDragListener,
+public class Map_Activity extends AppCompatActivity
+    implements
+        GoogleMap.OnMyLocationButtonClickListener,
+        GoogleMap.OnMyLocationClickListener,
+        GoogleMap.OnMarkerDragListener,
         //GoogleMap.OnMarkerClickListener,
         OnMapReadyCallback
-{
+    {
 
     private Button mLive_button;
     private Button mDash_button;
@@ -93,10 +102,12 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     public static final String ROBOT_POSTION_MOVE_MARKER = "com.b.earthdrone.SHOW_NOTIFICATION";
     private static final long POLL_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
     private static BroadcastReceiver MapReceiver = new StartupReceiver();
+
     private static LatLng geofenceCorner1 = new LatLng(35.616759, -82.566081);
     private static LatLng geofenceCorner2 = new LatLng(35.615992, -82.566879);
     private static LatLng geofenceCorner3 = new LatLng(35.615243, -82.565706);
     private static LatLng geofenceCorner4 = new LatLng(35.615999, -82.564857);
+
     private static Marker user_marker1;
     private static Marker user_marker2;
     private static Marker user_marker3;
@@ -108,7 +119,7 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     private static Location location;
     private static Polyline polyline;
 
-    /**
+        /**
      * For this to work I have to poll the variables to see if they changed I also have to run a Poll service to grab the data from the database what I dont understand is why I made the mastermodel private and
      * now I can not reference them when I run my task
      *
@@ -121,6 +132,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
 
+        //mlatitude_text=(TextView)findViewById(R.id.lat);
+        //mlongitude_text=(TextView)findViewById(R.id.lon);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);// want to put a flag so I know when the map is ready
@@ -130,10 +144,11 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Intent intent = new Intent(this, PollService.class);
         startService(intent);
 
+        //BroadcastReceiver br = new StartupReceiver();
         IntentFilter mapfilter = new IntentFilter(ROBOT_POSTION_MOVE_MARKER);
         this.registerReceiver(MapReceiver,mapfilter);
         PollService.setServiceAlarm(this,true);{
-
+            //moveMarker();
             startService(intent);
         }
 
@@ -210,7 +225,8 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
                     // ...
                     System.out.println(loc);
                     location = loc;
-
+                    //MyTask myTask = new MyTask(location);
+                    //myTask.execute();
                 }
             }
         };
@@ -299,9 +315,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
             }
             System.out.printf("%f %f", robotlat, robotlong);
             robotPosition.setPosition(newlatLng);
+            //end of if the marker is already there
+            //robotPosition.remove();
+            //robotPosition = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
+
             System.out.println("Database is connected and map is created");
 
-        }//end of if map is created
+            }//end of if map is created
 
         else{
             System.out.println("Database is not connected and map is not created");
@@ -318,9 +338,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     @Override
     public void onMapReady(GoogleMap googleMap){
         mMap = googleMap;
+        //mMap.setOnMarkerClickListener(this);
         mMap.setOnMarkerDragListener(this);
         LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
+        //final  LatLng newlatLng = new LatLng(robotlat, robotlong);
+        //final LatLng robotMarkerPosition = new LatLng(35.615965, -82.566009);     //this is position of the robots marker
         final  LatLng latLng = new LatLng(robotlat, robotlong);
+        //final Marker robotPositionnew  = mMap.addMarker(new MarkerOptions().position(newlatLng).title("Robot"));
 
         //to change how big the robots image is, change these next 2 variables
         int imageWidth = 50;
@@ -331,10 +355,11 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         Bitmap robotMarkerImage = Bitmap.createScaledBitmap(b,imageWidth,imageHeight,false);
         robotPosition = mMap.addMarker(
                 new MarkerOptions()
-                        .position(latLng)
-                        .title("Robot")
-                        .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
-        );
+                .position(latLng)
+                .title("Robot")
+                .icon(BitmapDescriptorFactory.fromBitmap(robotMarkerImage))
+                );
+        //robotPosition.setIcon(BitmapDescriptorFactory.fromResource(R.id.robotIcon));
 
         LatLng UNCA_Quad = new LatLng(35.615965, -82.566009);
 
@@ -342,6 +367,9 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
         marker = true;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(UNCA_Quad, 18));
         mMap.setMyLocationEnabled(true);   //COMMENTED THIS OUT TO WORK ON PHONE
+        //newlatLng = new LatLng(35.615992, -82.566879);
+        // this is where you need to find out how to get our location
+
 
         user_marker1 = mMap.addMarker(new MarkerOptions()
                 .position(geofenceCorner1)
@@ -366,89 +394,89 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
 
     }
 
-    /**
-     * this starts the location
-     */
-    private void startLocationUpdates() {
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setSmallestDisplacement(0);
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper());
-        requestingLocationUpdates = true;
-    }
+        /**
+         * this starts the location
+         */
+        private void startLocationUpdates() {
+            locationRequest.setInterval(1000);
+            locationRequest.setFastestInterval(1000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setSmallestDisplacement(0);
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper());
+            requestingLocationUpdates = true;
+        }
 
-    protected void createLocationRequest() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        protected void createLocationRequest() {
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setInterval(1000);
+            locationRequest.setFastestInterval(1000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
 
 // ...
 
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // ...
-            }
-        });
+            SettingsClient client = LocationServices.getSettingsClient(this);
+            Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+            task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+                @Override
+                public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                    // All location settings are satisfied. The client can initialize
+                    // location requests here.
+                    // ...
+                }
+            });
 
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(Map_Activity.this,
-                                RESULT_OK);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
+            task.addOnFailureListener(this, new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (e instanceof ResolvableApiException) {
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            ResolvableApiException resolvable = (ResolvableApiException) e;
+                            resolvable.startResolutionForResult(Map_Activity.this,
+                                    RESULT_OK);
+                        } catch (IntentSender.SendIntentException sendEx) {
+                            // Ignore the error.
+                        }
                     }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    /**
-     * this is how we calculate the distance between our location and the robots location
-     * @param robotlat
-     * @param robotlong
-     * @param ourpositionlat
-     * @param ourpositionlon
-     * @return the distance to the global model variable distance
-     */
-    public static double getDistanceFromLatLonInKm(double robotlat,double robotlong ,double ourpositionlat,double ourpositionlon) {
-        int R = 6371; // Radius of the earth in km
-        double dLat = deg2rad(robotlat-ourpositionlat);  // deg2rad below
-        double dLon = deg2rad(robotlong-ourpositionlon);
-        double a =
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(deg2rad(ourpositionlat)) * Math.cos(deg2rad(robotlat)) *
-                                Math.sin(dLon/2) * Math.sin(dLon/2)
-                ;
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double distance = R * c; // Distance in km
-        double footconversion = 3280.84;
-        distance = distance * footconversion;
-        return distance;
-    }
+        /**
+         * this is how we calculate the distance between our location and the robots location
+         * @param robotlat
+         * @param robotlong
+         * @param ourpositionlat
+         * @param ourpositionlon
+         * @return the distance to the global model variable distance
+         */
+        public static double getDistanceFromLatLonInKm(double robotlat,double robotlong ,double ourpositionlat,double ourpositionlon) {
+            int R = 6371; // Radius of the earth in km
+            double dLat = deg2rad(robotlat-ourpositionlat);  // deg2rad below
+            double dLon = deg2rad(robotlong-ourpositionlon);
+            double a =
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                            Math.cos(deg2rad(ourpositionlat)) * Math.cos(deg2rad(robotlat)) *
+                                    Math.sin(dLon/2) * Math.sin(dLon/2)
+                    ;
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            double distance = R * c; // Distance in km
+            double footconversion = 3280.84;
+            distance = distance * footconversion;
+            return distance;
+        }
 
-    public static double deg2rad(double deg) {
-        deg=deg *(Math.PI/180);
-        return deg;
-    }
+        public static double deg2rad(double deg) {
+            deg=deg *(Math.PI/180);
+            return deg;
+        }
 
     public void onMarkerDrag(Marker marker) {
     }
@@ -486,13 +514,13 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
     public void drawGeofence(LatLng corner1, LatLng corner2, LatLng corner3, LatLng corner4){
 
         robotFence = new PolylineOptions()
-                .add(
-                        corner1,
-                        corner2,
-                        corner3,
-                        corner4,
-                        corner1
-                );
+            .add(
+                corner1,
+                corner2,
+                corner3,
+                corner4,
+                corner1
+            );
 
         polyline = mMap.addPolyline(robotFence.color(Color.RED));
 
@@ -541,80 +569,97 @@ public class Map_Activity extends AppCompatActivity implements GoogleMap.OnMyLoc
             String res = "";
 
 
-            try {
-                Class.forName("org.mariadb.jdbc.Driver");
-                try {
-                    try {
-                        if (conn == null) {
-                            conn = DriverManager.getConnection(url, user, pass);
+               try {
+                   Class.forName("org.mariadb.jdbc.Driver");
+                   try {
+                       try {
+                           if (conn == null) {
+                               conn = DriverManager.getConnection(url, user, pass);
 
-                            GlobalClass.mModel.setConn(conn);
-                            System.out.println("Database connection success");
-                        } else {
-                            System.out.println("Database is connected");
+                               GlobalClass.mModel.setConn(conn);
+                               System.out.println("Database connection success");
+                           } else {
+                               System.out.println("Database is connected");
 
-                        }
+                           }
 
-                        Statement st1 = conn.createStatement();
-                        ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        or.next();
-                        ResultSetMetaData rsmd1 = or.getMetaData();
-                        orientation = or.getString(1).toString();
-                        GlobalClass.mModel.setOrientation(orientation);
+                           Statement st1 = conn.createStatement();
+                           ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           or.next();
+                           ResultSetMetaData rsmd1 = or.getMetaData();
+                           orientation = or.getString(1).toString();
+                           GlobalClass.mModel.setOrientation(orientation);
 
-                        Statement st2 = conn.createStatement();
-                        ResultSet lat = st2.executeQuery("select distinct Lat from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        lat.next();
-                        ResultSetMetaData rsmd2 = lat.getMetaData();
-                        latitude = lat.getString(1);
+                           Statement st2 = conn.createStatement();
+                           ResultSet lat = st2.executeQuery("select distinct Lat from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lat.next();
+                           ResultSetMetaData rsmd2 = lat.getMetaData();
+                           latitude = lat.getString(1);
 
-                        GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
+                           GlobalClass.mModel.setLatitude(Double.valueOf(latitude));
 
-                        Statement st3 = conn.createStatement();
-                        ResultSet lon = st3.executeQuery("select distinct Lon from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        lon.next();
-                        ResultSetMetaData rsmd3 = lon.getMetaData();
-                        longitude = lon.getString(1).toString();
-                        GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
+                           Statement st3 = conn.createStatement();
+                           ResultSet lon = st3.executeQuery("select distinct Lon from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           lon.next();
+                           ResultSetMetaData rsmd3 = lon.getMetaData();
+                           longitude = lon.getString(1).toString();
+                           GlobalClass.mModel.setLongitude(Double.valueOf(longitude));
 
-                        Statement st4 = conn.createStatement();
-                        ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
-                        dis.next();
-                        ResultSetMetaData rsmd4 = or.getMetaData();
-                        distance = dis.getString(1).toString();
-                        GlobalClass.mModel.setDistance(distance);
-                    }catch (SQLNonTransientConnectionException e) {
-                        e.printStackTrace();
-                        System.out.println("Data base connection was not a success");
-                    }
+                           Statement st4 = conn.createStatement();
+                           ResultSet dis = st4.executeQuery("select distinct Battery from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
+                           dis.next();
+                           ResultSetMetaData rsmd4 = or.getMetaData();
+                           distance = dis.getString(1).toString();
+                           GlobalClass.mModel.setDistance(distance);
+                       }catch (SQLNonTransientConnectionException e) {
+                           e.printStackTrace();
+                           System.out.println("Data base connection was not a success");
+                       }
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                   } catch (Exception e) {
+                       e.printStackTrace();
 
-                }
+                   }
 
-                StringBuilder sb = new StringBuilder();
+                   StringBuilder sb = new StringBuilder();
 
 
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
+               } catch (ClassNotFoundException ex) {
+                   ex.printStackTrace();
+               }
 
 
             // System.out.println("Data base selection success");
 
 //            micheal place our lat and long here
-            sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
+           sendBroadcast(new Intent(ROBOT_POSTION_MOVE_MARKER));//this send a broadcast to the system and when it gets the message it moves the marker
 
 
         }
 
+
+/*
+    private boolean isNetworkAvailableAndConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
+        boolean isNetworkConnected = isNetworkAvailable &&
+                cm.getActiveNetworkInfo().isConnected();
+
+        return isNetworkConnected;
+
+*/
     }
 }
 /*
+
+
      // myTask gets all of the variables for the dashboard
+
 public static class MyTask extends AsyncTask<String, Void, String> {
     String res = "";
+
     @Override
     protected String doInBackground(String... strings) {
         try {
@@ -626,44 +671,57 @@ public static class MyTask extends AsyncTask<String, Void, String> {
                     System.out.println("Database connection success");
                 } else {
                     System.out.println("Database is connected");
+
                 }
+
                 Statement st1 = conn.createStatement();
                 ResultSet or = st1.executeQuery("select distinct Heading from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                 or.next();
                 ResultSetMetaData rsmd1 = or.getMetaData();
                 orientation = or.getString(1).toString();
                 GlobalClass.mModel.setOrientation(orientation);
+
                 Statement st2 = conn.createStatement();
                 ResultSet lat = st2.executeQuery("select distinct Latitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                 lat.next();
                 ResultSetMetaData rsmd2 = lat.getMetaData();
                 latitude = lat.getString(1).toString();
                 GlobalClass.mModel.setLatitude(latitude);
+
                 Statement st3 = conn.createStatement();
                 ResultSet lon = st3.executeQuery("select distinct Longitude from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                 lon.next();
                 ResultSetMetaData rsmd3 = lon.getMetaData();
                 longitude = lon.getString(1).toString();
                 GlobalClass.mModel.setLongitude(longitude);
+
                 Statement st4 = conn.createStatement();
                 ResultSet dis = st4.executeQuery("select distinct Speed from Test Limit 1;");//pulls the value that is saved in the heading column which is then associated to the orientation text view
                 dis.next();
                 ResultSetMetaData rsmd4 = or.getMetaData();
                 distance = dis.getString(1).toString();
                 GlobalClass.mModel.setDistance(distance);
+
                 res = orientation + latitude + longitude + distance;
             } catch (Exception e) {
                 e.printStackTrace();
                 res = e.toString();
             }
+
             StringBuilder sb = new StringBuilder();
+
+
             return res;
+
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
         System.out.println("Data base selection success");
+
+
         return null;
     }
+
     protected void onPostExecute(String result) {
         morientation_text.setText(orientation);
         // GlobalClass.morientation_text=morientation_text;
@@ -674,5 +732,7 @@ public static class MyTask extends AsyncTask<String, Void, String> {
         mdistance_text.setText(distance);
         //GlobalClass.mdistance_text= mdistance_text;
     }
+
 }//mytask
+
  */
