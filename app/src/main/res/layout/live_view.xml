@@ -27,8 +27,8 @@
         app:layout_constraintTop_toTopOf="parent" >
 
 
-    <WebView
-        android:id="@+id/WebView"
+    <VideoView
+        android:id="@+id/videoView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
          />
